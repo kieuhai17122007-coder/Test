@@ -85,14 +85,19 @@
             const seatText = Array.isArray(seats) ? seats.join(", ") : seats;
             const statusClass = (b.status || "").includes("hủy")
               ? "cancelled"
+              : (b.status || "").includes("thanh toán")
+                ? "pending"
               : (b.status || "").includes("check-in")
                 ? "checked"
                 : "confirmed";
+            const paymentLink = b.status === "Chờ thanh toán"
+              ? `<a class="primary-btn" href="/src/pages/payment.html?bookingCode=${encodeURIComponent(b.bookingCode)}">Tiếp tục thanh toán</a>`
+              : `<a class="secondary-btn" href="/src/pages/booking.html">Xem đặt chỗ</a>`;
             return `<article class="history-card">
       <div class="history-top"><div><span class="history-code">${escape(b.bookingCode)}</span><span class="status-pill ${statusClass}">${escape(b.status || "Đã đặt vé")}</span></div><small>Đặt ngày ${date(b.createdAt)}</small></div>
       <div class="history-route"><div><strong>${escape(b.flight?.from)}</strong><span>${escape(b.flight?.departure || "")}</span></div><div class="history-plane">✈<i></i><small>${escape(b.flight?.flightNumber)}</small></div><div><strong>${escape(b.flight?.to)}</strong><span>${escape(b.flight?.arrival || "")}</span></div></div>
       <div class="history-meta"><span>👤 ${escape(b.passenger?.fullName)}</span><span>💺 ${escape(seatText || "Chưa chọn")}</span><span>👥 ${escape(b.passengerCount || 1)} hành khách</span><strong>${money(b.totalPrice)}</strong></div>
-      <div class="history-actions"><a class="secondary-btn" href="/src/pages/booking.html">Xem đặt chỗ</a>${b.status !== "Đã hủy" && b.status !== "Đã check-in" ? `<button class="text-danger cancel-booking" data-code="${escape(b.bookingCode)}">Hủy đặt vé</button>` : ""}</div>
+      <div class="history-actions">${paymentLink}${b.status !== "Đã hủy" && b.status !== "Đã check-in" ? `<button class="text-danger cancel-booking" data-code="${escape(b.bookingCode)}">Hủy đặt vé</button>` : ""}</div>
     </article>`;
           })
           .join("")}</div>`;

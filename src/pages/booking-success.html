@@ -37,6 +37,13 @@
           <a class="primary-btn" href="/src/pages/history.html">Xem lịch sử đặt vé</a>
         </div>
 
+        <div id="paymentPending" class="booking-missing" hidden>
+          <h1 id="pendingTitle">Đơn hàng chưa hoàn tất</h1>
+          <p id="pendingMessage">Đơn hàng chưa được xác nhận thanh toán.</p>
+          <a id="resumePayment" class="primary-btn" href="#" hidden>Tiếp tục thanh toán</a>
+          <a class="secondary-btn" href="/src/pages/history.html">Xem lịch sử đặt vé</a>
+        </div>
+
         <article id="ticket" class="success-ticket" aria-labelledby="successTitle" hidden>
           <header class="success-heading">
             <div class="success-check" aria-hidden="true">✓</div>
@@ -100,7 +107,7 @@
             <div><span>Giá vé mỗi hành khách</span><b id="unitPrice"></b></div>
             <div><span>Số lượng vé</span><b id="priceTicketCount"></b></div>
             <div class="ticket-grand-total"><span>Tổng tiền</span><strong id="totalPrice"></strong></div>
-            <p>Đây là đặt chỗ demo. Không có khoản thanh toán tiền thật nào được xử lý.</p>
+            <p>Đặt chỗ được xác nhận sau khi cổng thanh toán xác minh giao dịch.</p>
           </section>
         </article>
 

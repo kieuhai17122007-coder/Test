@@ -4,6 +4,12 @@ import './auth.js';
 document.addEventListener("DOMContentLoaded", function () {
     const departureInput = document.getElementById("departure");
     const returnInput = document.getElementById("returnDate");
+    const homeSearchForm = document.getElementById("homeSearchForm");
+    const fromInput = document.getElementById("from");
+    const toInput = document.getElementById("to");
+    const tripTypeInputs = document.querySelectorAll('input[name="tripType"]');
+    const returnField = returnInput?.closest(".return-field");
+    const errorBox = document.getElementById("searchError");
 
     const getToday = () => {
         const now = new Date();
@@ -16,19 +22,65 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const updateDateLimits = () => {
         const today = getToday();
+        if (!departureInput || !returnInput) return;
         departureInput.min = today;
         if (!departureInput.value || departureInput.value < today) {
             departureInput.value = today;
         }
 
         returnInput.min = departureInput.value;
-        if (returnInput.value && returnInput.value < returnInput.min) {
-            returnInput.value = "";
+    };
+
+    const selectedTripType = () =>
+        document.querySelector('input[name="tripType"]:checked')?.value || "oneway";
+
+    const updateTripType = () => {
+        const roundTrip = selectedTripType() === "roundtrip";
+        if (returnField) returnField.hidden = !roundTrip;
+        if (returnInput) {
+            returnInput.required = roundTrip;
+            updateDateLimits();
         }
     };
 
-    updateDateLimits();
-    departureInput.addEventListener("change", updateDateLimits);
+    if (departureInput && returnInput) {
+        updateDateLimits();
+        tripTypeInputs.forEach((input) => input.addEventListener("change", updateTripType));
+        updateTripType();
+        departureInput.addEventListener("change", () => {
+            updateDateLimits();
+            clearFieldError("departure");
+            if (returnInput.value && returnInput.value < departureInput.value) {
+                setFieldError("returnDate", "Ngày về phải bằng hoặc sau ngày đi.");
+            }
+        });
+        returnInput.addEventListener("change", () => {
+            if (returnInput.value && returnInput.value < departureInput.value) {
+                setFieldError("returnDate", "Ngày về phải bằng hoặc sau ngày đi.");
+            } else {
+                clearFieldError("returnDate");
+            }
+        });
+    }
+
+    function setFieldError(id, message) {
+        const input = document.getElementById(id);
+        const fieldError = document.getElementById(`${id}Error`);
+        if (fieldError) fieldError.textContent = message;
+        input?.setAttribute("aria-invalid", "true");
+    }
+
+    function clearFieldError(id) {
+        const input = document.getElementById(id);
+        const fieldError = document.getElementById(`${id}Error`);
+        if (fieldError) fieldError.textContent = "";
+        input?.removeAttribute("aria-invalid");
+    }
+
+    function clearSearchErrors() {
+        ["from", "to", "departure", "returnDate", "passengers"].forEach(clearFieldError);
+        if (errorBox) errorBox.textContent = "";
+    }
 
     const serviceGrid = document.querySelector(".service-grid");
     const renderServices = () => {
@@ -97,67 +149,68 @@ document.addEventListener("DOMContentLoaded", function () {
         if (event.key === "tripgo_services") renderServices();
     });
 
-    const homepageSearchButton = document.getElementById("searchBtn");
-    if (homepageSearchButton) {
-        homepageSearchButton.addEventListener("click", () => {
-            const from = document.getElementById("from").value;
-            const to = document.getElementById("to").value;
-            const departure = document.getElementById("departure").value;
-            const returnDate = document.getElementById("returnDate").value;
-            const passengers = Number(document.getElementById("passengers").value);
-            const tripType = document.querySelector(
-                'input[name="tripType"]:checked'
-            )?.value || "oneway";
+    document.getElementById("swapBtn")?.addEventListener("click", () => {
+        if (!fromInput || !toInput) return;
+        const from = fromInput.value;
+        fromInput.value = toInput.value;
+        toInput.value = from;
+        clearFieldError("from");
+        clearFieldError("to");
+    });
 
-            if (!from || !to || !departure) {
-                alert("Vui lòng nhập đầy đủ thông tin chuyến bay.");
-                return;
-            }
-            if (from === to) {
-                alert("Điểm đi và điểm đến không được trùng nhau.");
-                return;
-            }
-            if (tripType === "roundtrip" && !returnDate) {
-                alert("Vui lòng chọn ngày về.");
-                return;
-            }
-            if (returnDate && returnDate < getToday()) {
-                alert("Ngày về không được ở trong quá khứ.");
-                return;
-            }
-            if (returnDate && returnDate < departure) {
-                alert("Ngày về phải bằng hoặc sau ngày đi.");
-                return;
-            }
-            if (!Number.isInteger(passengers) || passengers < 1 || passengers > 9) {
-                alert("Số hành khách phải từ 1 đến 9.");
-                return;
-            }
+    homeSearchForm?.addEventListener("submit", (event) => {
+        event.preventDefault();
+        clearSearchErrors();
 
-            if (departure < getToday()) {
-                alert("Ngày đi không được ở trong quá khứ.");
-                return;
-            }
+        const from = fromInput.value;
+        const to = toInput.value;
+        const departure = departureInput.value;
+        const returnDate = returnInput.value;
+        const passengers = Number(document.getElementById("passengers").value);
+        const tripType = selectedTripType();
+        let firstInvalidField = null;
 
-            const params = new URLSearchParams({
-                from,
-                to,
-                departure,
-                returnDate,
-                passengers: String(passengers),
-                ticketClass: document.getElementById("classType").value === "Thương gia"
-                    ? "business"
-                    : "economy",
-                tripType
-            });
-            const searchUrl = `/src/pages/search.html?${params}`;
-            if (!window.TripGoAuth.isLoggedIn()) {
-                window.location.href = `/src/pages/login.html?returnUrl=${encodeURIComponent(searchUrl)}`;
-                return;
-            }
-            window.location.href = searchUrl;
+        const invalid = (id, message) => {
+            setFieldError(id, message);
+            firstInvalidField ||= document.getElementById(id);
+        };
+
+        if (!from) invalid("from", "Chọn điểm khởi hành.");
+        if (!to) invalid("to", "Chọn điểm đến.");
+        if (from && to && from === to) invalid("to", "Điểm đến phải khác điểm đi.");
+        if (!departure) invalid("departure", "Chọn ngày khởi hành.");
+        else if (departure < getToday()) invalid("departure", "Ngày khởi hành không được ở trong quá khứ.");
+        if (tripType === "roundtrip") {
+            if (!returnDate) invalid("returnDate", "Chọn ngày về.");
+            else if (returnDate < getToday()) invalid("returnDate", "Ngày về không được ở trong quá khứ.");
+            else if (departure && returnDate < departure) invalid("returnDate", "Ngày về phải bằng hoặc sau ngày đi.");
+        }
+        if (!Number.isInteger(passengers) || passengers < 1 || passengers > 9) {
+            invalid("passengers", "Số hành khách phải từ 1 đến 9.");
+        }
+
+        if (firstInvalidField) {
+            if (errorBox) errorBox.textContent = "Vui lòng kiểm tra lại thông tin tìm kiếm.";
+            firstInvalidField.focus();
+            return;
+        }
+
+        const params = new URLSearchParams({
+            from,
+            to,
+            departure,
+            returnDate: tripType === "roundtrip" ? returnDate : "",
+            passengers: String(passengers),
+            ticketClass: document.getElementById("classType").value,
+            tripType
         });
-    }
+        const searchUrl = `/src/pages/search.html?${params}`;
+        if (!window.TripGoAuth.isLoggedIn()) {
+            window.location.href = `/src/pages/login.html?returnUrl=${encodeURIComponent(searchUrl)}`;
+            return;
+        }
+        window.location.href = searchUrl;
+    });
 
     const searchForm = document.getElementById("searchForm");
 
@@ -165,8 +218,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    const fromInput = document.getElementById("from");
-    const toInput = document.getElementById("to");
     const passengersInput = document.getElementById("passengers");
 
     searchForm.addEventListener("submit", function (event) {

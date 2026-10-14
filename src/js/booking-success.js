@@ -9,9 +9,16 @@ auth.updateAuthUI();
 const ticket = document.getElementById("ticket");
 const actions = document.querySelector(".success-actions");
 const missing = document.getElementById("missingBooking");
+const paymentPending = document.getElementById("paymentPending");
 const params = new URLSearchParams(window.location.search);
 const bookingCode = params.get("bookingCode");
 const user = auth.getCurrentUser();
+const paymentLabels = {
+  qr: "Quét mã QR",
+  "domestic-card": "Thẻ nội địa",
+  "international-card": "Thẻ quốc tế",
+  ewallet: "Ví điện tử"
+};
 const booking = bookingCode
   ? auth.getBookings().find((item) =>
       item.bookingCode === bookingCode &&
@@ -21,6 +28,24 @@ const booking = bookingCode
 
 if (!booking) {
   missing.hidden = false;
+} else if (booking.status !== "Đã đặt vé" || booking.paymentState !== "paid" || /demo|mô phỏng/i.test(booking.paymentStatus || "")) {
+  paymentPending.hidden = false;
+  const isCancelled = booking.status === "Đã hủy";
+  const isUnverified = booking.status === "Đã đặt vé" &&
+    (booking.paymentState !== "paid" || /demo|mô phỏng/i.test(booking.paymentStatus || ""));
+  document.getElementById("pendingTitle").textContent = isCancelled
+    ? "Đơn hàng đã bị hủy"
+    : isUnverified ? "Chưa xác minh thanh toán" : "Đơn hàng chưa hoàn tất";
+  document.getElementById("pendingMessage").textContent = isCancelled
+    ? "Đơn hàng đã bị hủy và chưa được xác nhận thanh toán."
+    : isUnverified
+      ? "Chưa nhận được xác nhận đáng tin cậy từ cổng thanh toán. Vui lòng liên hệ TripGo để kiểm tra trước khi sử dụng vé."
+      : `Trạng thái thanh toán: ${booking.paymentStatus || "Chờ thanh toán"}. Vé chỉ được xác nhận sau khi thanh toán được xác minh.`;
+  if (!isCancelled && !isUnverified) {
+    const resumePayment = document.getElementById("resumePayment");
+    resumePayment.href = `/src/pages/payment.html?bookingCode=${encodeURIComponent(booking.bookingCode)}`;
+    resumePayment.hidden = false;
+  }
 } else {
   const airports = {
     HAN: "Hà Nội",
@@ -50,7 +75,7 @@ if (!booking) {
   const values = {
     bookingCode: booking.bookingCode,
     bookingStatus: booking.status || "Đã đặt vé",
-    paymentStatus: booking.paymentStatus || "Thanh toán mô phỏng — chưa phát sinh giao dịch thật",
+    paymentStatus: booking.paymentStatus || "Chưa xác nhận thanh toán",
     flightNumber: booking.flightId || flight.flightNumber || flight.id || "—",
     fromCode: flight.from || booking.from || "—",
     fromName: airports[flight.from || booking.from] || "—",
@@ -66,7 +91,7 @@ if (!booking) {
     ticketClass: booking.ticketType || booking.classType || "Phổ thông",
     seatNumbers: seats,
     ticketCount: `${passengerCount} vé`,
-    paymentMethod: booking.paymentMethod || "—",
+    paymentMethod: paymentLabels[booking.paymentMethod] || booking.paymentMethod || "—",
     bookingTime: bookingDate,
     unitPrice: formatPrice(unitPrice),
     priceTicketCount: `${passengerCount} vé`,
