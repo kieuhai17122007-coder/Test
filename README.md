@@ -9,17 +9,7 @@ npm install
 npm run dev
 ```
 
-Mở địa chỉ Vite hiển thị. Bản build đã nằm trong `dist/`:
 
-```sh
-npm run build
-npm run preview
-```
-
-## Thử tính năng ghế
-
-1. Đăng ký/đăng nhập tài khoản thường. Tìm chuyến bay và chọn 2–6 hành khách.
-2. Nhập thông tin hành khách, tiếp tục đến **Chọn ghế**.
 3. Chọn **1A → 1C**: hệ thống chặn vì bỏ trống 1B. Chọn **1A → 1B** thì hợp lệ.
 4. Dùng **Tự xếp ghế liền nhau** để xếp nhóm. Ghế trong từng cụm ABC hoặc DEF phải liền nhau. Nhóm đông có thể chọn các cụm liền nhau ở những hàng khác nhau, không bắt buộc sát hàng. Tự xếp ghế vẫn ưu tiên các hàng gần nhau.
 5. Xác nhận và thanh toán demo. Đặt lần tiếp theo trên cùng chuyến/ngày sẽ thấy ghế vừa đặt màu xám.

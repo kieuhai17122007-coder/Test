@@ -1,10 +1,16 @@
 
 import './auth.js';
+import {
+    createDemoFlights,
+    matchesFlightSearch,
+    mergeFlightCatalog,
+    normalizeFlight
+} from './flight-data.js';
 
 if (window.TripGoAuth.requireLogin()) {
 window.TripGoAuth.updateAuthUI();
 
-const defaultFlights = [
+const legacyFlights = [
     {
         id: "TG101",
         airline: "Vietnam Airlines",
@@ -109,6 +115,7 @@ const defaultFlights = [
     { id: "TG130", airline: "Bamboo Airways", from: "PQC", to: "HAN", departure: "18:00", arrival: "20:15", duration: "2 giờ 15 phút", price: 1450000 }
 ];
 
+const defaultFlights = [...createDemoFlights(), ...legacyFlights];
 let flights = defaultFlights;
 
 function readFlights() {
@@ -126,7 +133,16 @@ function readFlights() {
             throw new TypeError("Danh sách chuyến bay không hợp lệ.");
         }
 
-        flights = parsedFlights;
+        const saved = parsedFlights
+            .map((flight, index) => {
+                const normalized = normalizeFlight(flight);
+                if (!normalized) {
+                    console.warn(`Bỏ qua dữ liệu chuyến bay không hợp lệ ở vị trí ${index}.`);
+                }
+                return normalized;
+            })
+            .filter(Boolean);
+        flights = mergeFlightCatalog(defaultFlights, saved);
     } catch (error) {
         console.error("Không thể đọc dữ liệu chuyến bay:", error);
         flights = defaultFlights;
@@ -345,14 +361,12 @@ function searchFlights() {
     }
 
     const result = flights.filter(function (flight) {
-        return (
-            flight.from === from &&
-            flight.to === to &&
-            (flight.status === undefined || flight.status === "active") &&
-            (!flight.date || flight.date === departure) &&
-            (flight.seats === undefined ||
-                Number(flight.seats) >= passengers)
-        );
+        return matchesFlightSearch(flight, {
+            from,
+            to,
+            departure,
+            passengers
+        });
     });
 
     displayFlights(
@@ -381,7 +395,8 @@ function displayFlights(
                 <div class="empty-icon">✈</div>
                 <h3>Không có chuyến bay</h3>
                 <p>
-                    Không tìm thấy chuyến bay phù hợp với thông tin bạn đã chọn.
+                    Lịch bay demo chỉ có một số tuyến và ngày nhất định; website chưa kết nối API chuyến bay trực tiếp.
+                    Hãy thử ngày/tuyến khác hoặc nhờ quản trị viên thêm lịch bay.
                 </p>
             </div>
         `;
