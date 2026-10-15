@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TripGo - Tra cứu đặt vé</title>
-  <link rel="stylesheet" href="/src/css/main.css"><link rel="stylesheet" href="/src/css/pages.css">
+  <link rel="stylesheet" href="/src/css/main.css"><link rel="stylesheet" href="/src/css/pages.css"><link rel="stylesheet" href="/src/css/user-experience.css">
 </head>
 <body>
 <header class="header">
@@ -25,8 +25,8 @@
 <main class="simple-page"><div class="form-card">
   <p class="eyebrow dark">MANAGE BOOKING</p><h1>Tra cứu đặt chỗ</h1>
   <p>Nhập mã đặt chỗ và Email/Số điện thoại để xem thông tin vé.</p>
-  <label>Mã đặt chỗ<input id="code" type="text" placeholder="Ví dụ: TG123456"></label>
-  <label>Email/Số điện thoại<input id="contact" type="text" placeholder="Nhập Email hoặc số điện thoại"></label>
+  <label for="code">Mã đặt chỗ</label><input id="code" type="text" placeholder="Ví dụ: TG123456" autocomplete="off">
+  <label for="contact">Email/Số điện thoại</label><input id="contact" type="text" placeholder="Nhập Email hoặc số điện thoại" autocomplete="email">
   <button class="primary-btn wide" id="lookupBtn">TRA CỨU</button><div id="result"></div>
 </div></main>
 <script type="module">

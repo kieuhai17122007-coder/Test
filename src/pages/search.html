@@ -7,21 +7,27 @@
 
     <title>TripGo - Tìm chuyến bay</title>
 
+    <link rel="stylesheet" href="/src/css/main.css">
+    <link rel="stylesheet" href="/src/css/responsive.css">
     <link rel="stylesheet" href="../css/search.css">
+    <link rel="stylesheet" href="/src/css/user-experience.css">
 </head>
 
 <body>
 
     <header class="header">
-        <div class="container header-content">
-            <a href="index.html" class="logo">TripGo</a>
+        <div class="container nav">
+            <a class="logo" href="/" aria-label="TripGo - Trang chủ">
+                <span class="logo-mark" aria-hidden="true">✈</span>
+                <span class="logo-text">TripGo</span>
+            </a>
 
-            <nav class="navigation">
-                <a href="index.html">Đặt vé</a>
-                <a href="search.html" class="active">Chuyến bay</a>
-                <a href="index.html#services">Dịch vụ</a>
-                <a href="booking.html">Tra cứu</a>
-                <a href="checkin.html">Check-in</a>
+            <nav class="main-nav" aria-label="Điều hướng chính">
+                <a data-nav="home" href="/">Đặt vé</a>
+                <a data-nav="flights" href="/src/pages/search.html">Chuyến bay</a>
+                <a data-nav="services" href="/#services">Dịch vụ</a>
+                <a data-nav="booking" href="/src/pages/booking.html">Tra cứu</a>
+                <a data-nav="checkin" href="/src/pages/checkin.html">Check-in</a>
             </nav>
             <div class="nav-account">
                 <a class="login-btn" data-auth-link href="/src/pages/login.html">Đăng nhập</a>
@@ -131,10 +137,10 @@
 
             </div>
 
-            <div id="error" class="error"></div>
+            <div id="error" class="error" role="alert" aria-live="polite"></div>
 
             <button type="button" id="searchButton" class="search-button">
-                TÌM KIẾM CHUYẾN BAY
+                Tìm chuyến bay
             </button>
 
         </section>

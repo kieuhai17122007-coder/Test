@@ -997,6 +997,28 @@
   background: #fff0ef;
   color: #b42318;
 }
+.status-pill.pending,
+.status-pill.payment-pending {
+  background: #fff6df;
+  color: #805b00;
+}
+.status-pill.payment-paid {
+  background: #e9f8f1;
+  color: #087443;
+}
+.status-pill.payment-failed {
+  background: #fff0ef;
+  color: #b42318;
+}
+.history-statuses {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+.history-statuses .history-code {
+  margin-right: 2px;
+}
 .history-route {
   display: grid;
   grid-template-columns: 1fr 110px 1fr;

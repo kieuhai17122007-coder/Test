@@ -6,6 +6,7 @@
     <title>TripGo - Thanh toán vé máy bay</title>
     <link rel="stylesheet" href="/src/css/main.css" />
     <link rel="stylesheet" href="/src/css/pages.css" />
+    <link rel="stylesheet" href="/src/css/user-experience.css" />
   </head>
   <body>
     <header class="header">
@@ -32,7 +33,7 @@
         <div class="done"><span>02</span>Hành khách</div>
         <div class="done"><span>03</span>Chọn ghế</div>
         <div class="done"><span>04</span>Xác nhận</div>
-        <div class="active"><span>05</span>Thanh toán</div>
+        <div class="active" aria-current="step"><span>05</span>Thanh toán</div>
       </div>
     </div>
     <main class="booking-page">
@@ -73,7 +74,7 @@
               </label>
             </div>
             <div id="paymentAvailability" class="payment-availability" role="status"></div>
-            <button class="primary-btn wide" id="payBtn" type="button">TIẾP TỤC THANH TOÁN</button>
+            <button class="primary-btn wide" id="payBtn" type="button">Tiếp tục thanh toán</button>
           </div>
           <section id="paymentPanel" class="qr-payment-panel" aria-labelledby="qrTitle" hidden>
             <div class="qr-payment-heading">
@@ -105,8 +106,8 @@
               </div>
             </div>
             <div id="paymentMessage" class="payment-state-message" role="status"></div>
-            <button id="retryPayment" class="primary-btn wide" type="button" hidden>TẠO YÊU CẦU THANH TOÁN MỚI</button>
-            <a id="viewTicket" class="primary-btn wide" href="#" hidden>XEM VÉ CỦA TÔI</a>
+            <button id="retryPayment" class="primary-btn wide" type="button" hidden>Tạo yêu cầu thanh toán mới</button>
+            <a id="viewTicket" class="primary-btn wide" href="#" hidden>Xem vé của tôi</a>
             <button id="cancelPayment" class="text-danger cancel-payment-btn" type="button">Hủy thanh toán</button>
           </section>
           <div id="result" role="alert" aria-live="polite"></div>

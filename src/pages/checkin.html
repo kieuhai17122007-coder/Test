@@ -6,6 +6,7 @@
     <title>TripGo - Check-in</title>
     <link rel="stylesheet" href="/src/css/main.css" />
     <link rel="stylesheet" href="/src/css/pages.css" />
+    <link rel="stylesheet" href="/src/css/user-experience.css" />
   </head>
   <body>
     <header class="header">
@@ -37,9 +38,9 @@
         <p class="eyebrow dark">ONLINE CHECK-IN</p>
         <h1>Check-in trực tuyến</h1>
         <p>Nhập mã đặt chỗ và họ hành khách để bắt đầu.</p>
-        <label>Mã đặt chỗ<input id="code" placeholder="TG123456" /></label
-        ><label>Họ hành khách<input id="surname" placeholder="NGUYEN" /></label>
-        <button class="primary-btn wide" id="checkinBtn">CHECK-IN</button>
+        <label for="code">Mã đặt chỗ</label><input id="code" placeholder="TG123456" autocomplete="off" />
+        <label for="surname">Họ hành khách</label><input id="surname" placeholder="NGUYEN" autocomplete="family-name" />
+        <button class="primary-btn wide" id="checkinBtn">Check-in</button>
         <div id="result"></div>
       </div>
     </main>

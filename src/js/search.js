@@ -2,6 +2,7 @@
 import './auth.js';
 import flightCatalog from "../data/flights.json";
 import {
+    buildRouteFlightOptions,
     matchesFlightSearch,
     mergeFlightCatalog,
     normalizeFlight
@@ -12,8 +13,7 @@ window.TripGoAuth.updateAuthUI();
 
 const defaultFlights = flightCatalog
     .map(normalizeFlight)
-    .filter(Boolean)
-    .map((flight) => ({ ...flight, date: flight.date || getToday() }));
+    .filter(Boolean);
 let flights = defaultFlights;
 
 function readFlights() {
@@ -258,13 +258,11 @@ function searchFlights() {
         return;
     }
 
-    const result = flights.filter(function (flight) {
-        return matchesFlightSearch(flight, {
-            from,
-            to,
-            departure,
-            passengers
-        });
+    const result = buildRouteFlightOptions(flights, {
+        from,
+        to,
+        departure,
+        passengers
     });
 
     displayFlights(
