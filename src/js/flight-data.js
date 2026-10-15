@@ -10,7 +10,7 @@ export function normalizeFlight(flight) {
     departure: flight.departure ?? flight.departureTime ?? "",
     arrival: flight.arrival ?? flight.arrivalTime ?? "",
     seats: flight.seats ?? flight.availableSeats,
-    status: flight.status === "available" ? "active" : flight.status
+    status: flight.status === "available" ? "active" : flight.status,
   };
 }
 
@@ -20,43 +20,53 @@ export function mergeFlightCatalog(defaultFlights, savedFlights) {
 
   return [
     ...defaultFlights.map((flight) => savedById.get(flight.id) ?? flight),
-    ...savedFlights.filter((flight) => !defaultIds.has(flight.id))
+    ...savedFlights.filter((flight) => !defaultIds.has(flight.id)),
   ];
 }
 
-export function matchesFlightSearch(flight, { from, to, departure, passengers }) {
-  return flight.from === from &&
+export function matchesFlightSearch(
+  flight,
+  { from, to, departure, passengers },
+) {
+  return (
+    flight.from === from &&
     flight.to === to &&
     (flight.status === undefined || flight.status === "active") &&
     (!flight.date || flight.date === departure) &&
-    (flight.seats === undefined || Number(flight.seats) >= passengers);
+    (flight.seats === undefined || Number(flight.seats) >= passengers)
+  );
 }
 
 const AIRLINES = [
   "Vietnam Airlines",
   "Vietjet Air",
   "Bamboo Airways",
-  "Jetstar Pacific"
+  "Jetstar Pacific",
 ];
 
 const ROUTE_TEMPLATES = [
   { departure: "07:00", arrival: "09:10", price: 1400000 },
   { departure: "09:30", arrival: "11:40", price: 1200000 },
   { departure: "13:00", arrival: "15:10", price: 1600000 },
-  { departure: "18:00", arrival: "20:10", price: 1750000 }
+  { departure: "18:00", arrival: "20:10", price: 1750000 },
 ];
 
-export function buildRouteFlightOptions(flights, { from, to, departure, passengers = 1 } = {}) {
+export function buildRouteFlightOptions(
+  flights,
+  { from, to, departure, passengers = 1 } = {},
+) {
   if (!from || !to || from === to) {
     return [];
   }
 
-  const directFlights = flights.filter((flight) => matchesFlightSearch(flight, {
-    from,
-    to,
-    departure,
-    passengers
-  }));
+  const directFlights = flights.filter((flight) =>
+    matchesFlightSearch(flight, {
+      from,
+      to,
+      departure,
+      passengers,
+    }),
+  );
 
   if (directFlights.length >= 2) {
     return directFlights;
@@ -77,8 +87,8 @@ export function buildRouteFlightOptions(flights, { from, to, departure, passenge
       departure: template.departure,
       arrival: template.arrival,
       seats: Math.max(120, Number(passengers) * 12),
-      price: template.price + (index * 250000),
-      status: "active"
+      price: template.price + index * 250000,
+      status: "active",
     });
   }
 

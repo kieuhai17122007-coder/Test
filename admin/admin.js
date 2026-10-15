@@ -3,7 +3,11 @@ import { renderSeatManagement } from "./admin-seats.js";
 import "../src/js/auth.js";
 import flightCatalog from "../src/data/flights.json";
 import { mergeFlightCatalog, normalizeFlight } from "../src/js/flight-data.js";
-import { createManagement, normalizeBooking, recordAudit } from "./admin-management.js";
+import {
+  createManagement,
+  normalizeBooking,
+  recordAudit,
+} from "./admin-management.js";
 
 (() => {
   "use strict";
@@ -136,17 +140,23 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
     if (value === "pending" || value === "chờ thanh toán") return "pending";
     return "confirmed";
   };
-  const paymentState = (booking) => booking.paymentState ||
-    (/^(đã thanh toán|đã xác nhận chuyển khoản)/i.test(booking.paymentStatus || "")
+  const paymentState = (booking) =>
+    booking.paymentState ||
+    (/^(đã thanh toán|đã xác nhận chuyển khoản)/i.test(
+      booking.paymentStatus || "",
+    )
       ? "paid"
       : "pending");
-  const paymentStatusLabel = (booking) => booking.paymentStatus || ({
-    paid: "Đã thanh toán",
-    processing: "Đang xác nhận",
-    failed: "Thanh toán thất bại",
-    expired: "Yêu cầu thanh toán hết hạn",
-    cancelled: "Đã hủy thanh toán",
-  }[paymentState(booking)] || "Chưa xác nhận thanh toán");
+  const paymentStatusLabel = (booking) =>
+    booking.paymentStatus ||
+    {
+      paid: "Đã thanh toán",
+      processing: "Đang xác nhận",
+      failed: "Thanh toán thất bại",
+      expired: "Yêu cầu thanh toán hết hạn",
+      cancelled: "Đã hủy thanh toán",
+    }[paymentState(booking)] ||
+    "Chưa xác nhận thanh toán";
   const isPaymentVerified = (booking) =>
     paymentState(booking) === "paid" &&
     !/demo|mô phỏng/i.test(booking.paymentStatus || "");
@@ -157,10 +167,25 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
     flights = [],
     bookings = [],
     selectedCustomerEmail = null;
-  const management = createManagement({read, write, safe, money, date, bookingState,
-    alertMessage, getFlights: () => read(KEYS.flights, flights),
-    getBookings: () => read(KEYS.bookings, []).map(b => normalizeBooking(b, read(KEYS.flights, flights))),
-    render, openModal, getServiceCatalog, flightStatusLabel, localToday});
+  const management = createManagement({
+    read,
+    write,
+    safe,
+    money,
+    date,
+    bookingState,
+    alertMessage,
+    getFlights: () => read(KEYS.flights, flights),
+    getBookings: () =>
+      read(KEYS.bookings, []).map((b) =>
+        normalizeBooking(b, read(KEYS.flights, flights)),
+      ),
+    render,
+    openModal,
+    getServiceCatalog,
+    flightStatusLabel,
+    localToday,
+  });
   function authenticated() {
     return window.TripGoAuth.isAdmin();
   }
@@ -169,9 +194,7 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
       if (window.TripGoAuth.isLoggedIn()) {
         window.location.replace("/");
       } else {
-        window.location.replace(
-          "/src/pages/login.html?returnUrl=%2Fadmin%2F",
-        );
+        window.location.replace("/src/pages/login.html?returnUrl=%2Fadmin%2F");
       }
       return;
     }
@@ -212,8 +235,11 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
       .map(normalizeFlight)
       .filter(Boolean);
     flights = mergeFlightCatalog(defaults, savedFlights);
-    bookings = read(KEYS.bookings, []).map(b => normalizeBooking(b, flights));
-    if (savedValue === null || JSON.stringify(savedFlights) !== JSON.stringify(flights)) {
+    bookings = read(KEYS.bookings, []).map((b) => normalizeBooking(b, flights));
+    if (
+      savedValue === null ||
+      JSON.stringify(savedFlights) !== JSON.stringify(flights)
+    ) {
       saveFlights();
     }
   }
@@ -239,9 +265,18 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
   }
   function header() {
     const titles = {
-      seats: ["Quản lý ghế", "Sơ đồ máy bay 2D, ghế đã đặt và khóa ghế theo ngày bay."],
-      schedule: ["Lịch bay", "Theo dõi lịch theo ngày, trạng thái và số chỗ còn lại."],
-      data: ["Sao lưu & khôi phục", "Chuyển dữ liệu quản lý giữa các máy bằng JSON."],
+      seats: [
+        "Quản lý ghế",
+        "Sơ đồ máy bay 2D, ghế đã đặt và khóa ghế theo ngày bay.",
+      ],
+      schedule: [
+        "Lịch bay",
+        "Theo dõi lịch theo ngày, trạng thái và số chỗ còn lại.",
+      ],
+      data: [
+        "Sao lưu & khôi phục",
+        "Chuyển dữ liệu quản lý giữa các máy bằng JSON.",
+      ],
       audit: ["Nhật ký thao tác", "Tra cứu các lần cập nhật dữ liệu từ admin."],
       banned: [
         "Hành khách bị cấm bay",
@@ -283,33 +318,36 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
       return;
     }
     flights = read(KEYS.flights, flights);
-    bookings = read(KEYS.bookings, []).map(b => normalizeBooking(b, flights));
+    bookings = read(KEYS.bookings, []).map((b) => normalizeBooking(b, flights));
     header();
     if (page === "overview") {
       renderOverview();
       const quick = document.createElement("div");
       quick.className = "workspace-shortcuts";
-      quick.innerHTML = `<h2>Truy cập nhanh</h2><div class="shortcut-grid">` + [
-        ["flights", "plane", "Chuyến bay"],
-        ["seats", "chair", "Quản lý ghế 2D"],
-        ["bookings", "ticket", "Quản lý vé"],
-        ["services", "bag-shopping", "Dịch vụ"],
-        ["support", "headset", "Hỗ trợ khách hàng"],
-        ["banned", "ban", "Hành khách cấm bay"],
-        ["customers", "users", "Khách hàng"],
-        ["reports", "chart-column", "Báo cáo"],
-        ["schedule", "calendar-days", "Lịch bay"],
-        ["data", "database", "Sao lưu & khôi phục"],
-        ["audit", "clock-rotate-left", "Nhật ký thao tác"],
-      ]
-        .map(
-          ([p, i, l]) =>
-            `<button data-go="${p}" class="card shortcut-card"><span>${adminIcon(i)}</span><span>${l}</span></button>`,
-        )
-        .join("") + `</div>`;
+      quick.innerHTML =
+        `<h2>Truy cập nhanh</h2><div class="shortcut-grid">` +
+        [
+          ["flights", "plane", "Chuyến bay"],
+          ["seats", "chair", "Quản lý ghế 2D"],
+          ["bookings", "ticket", "Quản lý vé"],
+          ["services", "bag-shopping", "Dịch vụ"],
+          ["support", "headset", "Hỗ trợ khách hàng"],
+          ["banned", "ban", "Hành khách cấm bay"],
+          ["customers", "users", "Khách hàng"],
+          ["reports", "chart-column", "Báo cáo"],
+          ["schedule", "calendar-days", "Lịch bay"],
+          ["data", "database", "Sao lưu & khôi phục"],
+          ["audit", "clock-rotate-left", "Nhật ký thao tác"],
+        ]
+          .map(
+            ([p, i, l]) =>
+              `<button data-go="${p}" class="card shortcut-card"><span>${adminIcon(i)}</span><span>${l}</span></button>`,
+          )
+          .join("") +
+        `</div>`;
       $("content").append(quick);
     }
-    if (page === "seats") renderSeatManagement({safe, write, alertMessage});
+    if (page === "seats") renderSeatManagement({ safe, write, alertMessage });
     if (page === "flights") renderFlights();
     if (page === "bookings") renderBookings();
     if (page === "customers") renderCustomers();
@@ -383,17 +421,17 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
       ["Khách hàng", customerEmails.size, '<i class="fa-solid fa-users"></i>'],
     ];
     $("content").innerHTML = `
-      <section class="overview-hero"><div><small>TRIPGO CONTROL CENTER</small><h2>Tổng quan hoạt động</h2><p>Theo dõi chuyến bay, vé đặt và hoạt động của khách hàng.</p><div class="hero-actions"><button class="primary" data-go="flights">${adminIcon('plane')}<span class="ml-2">Quản lý chuyến bay</span></button><button class="secondary" data-go="reports">Xem báo cáo</button></div><div class="hero-date">${safe(new Intl.DateTimeFormat('vi-VN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date()))}</div></div><div class="hero-art" aria-hidden="true"><span class="hero-orbit"></span><span class="hero-plane">${adminIcon('plane')}</span></div></section>
+      <section class="overview-hero"><div><small>TRIPGO CONTROL CENTER</small><h2>Tổng quan hoạt động</h2><p>Theo dõi chuyến bay, vé đặt và hoạt động của khách hàng.</p><div class="hero-actions"><button class="primary" data-go="flights">${adminIcon("plane")}<span class="ml-2">Quản lý chuyến bay</span></button><button class="secondary" data-go="reports">Xem báo cáo</button></div><div class="hero-date">${safe(new Intl.DateTimeFormat("vi-VN", { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date()))}</div></div><div class="hero-art" aria-hidden="true"><span class="hero-orbit"></span><span class="hero-plane">${adminIcon("plane")}</span></div></section>
       <div class="stats-grid">${stats
-        .map(
-          ([label, value, icon]) => {
-            const valueClass =
-              label === "Doanh thu" ? "stat-value stat-value-money" : "stat-value";
-            return `<div class="card stat-card"><div class="stat-icon">${icon}</div><p class="stat-label">${label}</p><p class="${valueClass}">${value}</p><span class="stat-footnote">${label === "Doanh thu" ? "Chỉ tính giao dịch đã xác nhận" : "Theo dữ liệu hiện có"}</span></div>`;
-          },
-        )
+        .map(([label, value, icon]) => {
+          const valueClass =
+            label === "Doanh thu"
+              ? "stat-value stat-value-money"
+              : "stat-value";
+          return `<div class="card stat-card"><div class="stat-icon">${icon}</div><p class="stat-label">${label}</p><p class="${valueClass}">${value}</p><span class="stat-footnote">${label === "Doanh thu" ? "Chỉ tính giao dịch đã xác nhận" : "Theo dữ liệu hiện có"}</span></div>`;
+        })
         .join("")}</div>
-      <section class="overview-operations"><article class="card p-6"><div class="panel-heading"><div><p class="panel-kicker">LỊCH KHAI THÁC</p><h2 id="overviewFlightTitle">Chuyến bay sắp khởi hành</h2></div><button id="overviewExpandFlights" class="secondary">Xem tất cả</button></div><div id="overviewFlightList"></div><button id="overviewMoreFlights" class="secondary mt-4" hidden>Xem thêm 10 chuyến</button></article><article class="card p-6"><div class="panel-heading"><div><p class="panel-kicker">DỮ LIỆU VẬN HÀNH</p><h2>Phân bố hãng hàng không</h2></div><span class="badge off">${flights.filter(f=>f.status!=='deleted').length} chuyến</span></div><div id="overviewCarriers"></div><p class="text-xs text-slate-400 mt-5">Tỷ trọng theo danh mục chuyến bay hiện tại.</p></article></section>
+      <section class="overview-operations"><article class="card p-6"><div class="panel-heading"><div><p class="panel-kicker">LỊCH KHAI THÁC</p><h2 id="overviewFlightTitle">Chuyến bay sắp khởi hành</h2></div><button id="overviewExpandFlights" class="secondary">Xem tất cả</button></div><div id="overviewFlightList"></div><button id="overviewMoreFlights" class="secondary mt-4" hidden>Xem thêm 10 chuyến</button></article><article class="card p-6"><div class="panel-heading"><div><p class="panel-kicker">DỮ LIỆU VẬN HÀNH</p><h2>Phân bố hãng hàng không</h2></div><span class="badge off">${flights.filter((f) => f.status !== "deleted").length} chuyến</span></div><div id="overviewCarriers"></div><p class="text-xs text-slate-400 mt-5">Tỷ trọng theo danh mục chuyến bay hiện tại.</p></article></section>
       <div class="grid xl:grid-cols-[1.25fr_0.75fr] gap-6 mt-6">
         <div class="card p-6">
           <div class="flex items-center justify-between mb-4">
@@ -433,21 +471,66 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
         </div>
       </div>
     `;
-    let expanded=false,overviewLimit=10;
-    const flightList=()=>{
-      const catalog=flights.filter(f=>f.status!=='deleted').sort((a,b)=>`${a.date} ${a.departure}`.localeCompare(`${b.date} ${b.departure}`));
-      const upcoming=catalog.filter(f=>f.status==='active'&&(!f.date||f.date>=localToday()));
-      const rows=expanded?catalog:upcoming,limit=expanded?overviewLimit:4;
-      $('overviewFlightTitle').textContent=expanded?'Tất cả chuyến bay':'Chuyến bay sắp khởi hành';
-      $('overviewExpandFlights').textContent=expanded?'Thu gọn':'Xem tất cả';$('overviewExpandFlights').setAttribute('aria-expanded',String(expanded));
-      $('overviewFlightList').innerHTML=rows.slice(0,limit).map(f=>`<div class="overview-flight"><span class="overview-flight-icon">${adminIcon('plane')}</span><div class="overview-flight-info"><b>${safe(f.id)} · ${safe(f.from)} → ${safe(f.to)}</b><p>${safe(f.airline)} · ${date(f.date)}</p></div><div class="overview-flight-time"><strong>${safe(f.departure)}</strong><p><span class="badge ${flightStatusClass(f.status)}">${flightStatusLabel(f.status)}</span></p></div></div>`).join('') || '<p class="empty">Chưa có chuyến bay phù hợp.</p>';
-      $('overviewMoreFlights').hidden=!expanded||rows.length<=limit;
+    let expanded = false,
+      overviewLimit = 10;
+    const flightList = () => {
+      const catalog = flights
+        .filter((f) => f.status !== "deleted")
+        .sort((a, b) =>
+          `${a.date} ${a.departure}`.localeCompare(`${b.date} ${b.departure}`),
+        );
+      const upcoming = catalog.filter(
+        (f) => f.status === "active" && (!f.date || f.date >= localToday()),
+      );
+      const rows = expanded ? catalog : upcoming,
+        limit = expanded ? overviewLimit : 4;
+      $("overviewFlightTitle").textContent = expanded
+        ? "Tất cả chuyến bay"
+        : "Chuyến bay sắp khởi hành";
+      $("overviewExpandFlights").textContent = expanded
+        ? "Thu gọn"
+        : "Xem tất cả";
+      $("overviewExpandFlights").setAttribute(
+        "aria-expanded",
+        String(expanded),
+      );
+      $("overviewFlightList").innerHTML =
+        rows
+          .slice(0, limit)
+          .map(
+            (f) =>
+              `<div class="overview-flight"><span class="overview-flight-icon">${adminIcon("plane")}</span><div class="overview-flight-info"><b>${safe(f.id)} · ${safe(f.from)} → ${safe(f.to)}</b><p>${safe(f.airline)} · ${date(f.date)}</p></div><div class="overview-flight-time"><strong>${safe(f.departure)}</strong><p><span class="badge ${flightStatusClass(f.status)}">${flightStatusLabel(f.status)}</span></p></div></div>`,
+          )
+          .join("") || '<p class="empty">Chưa có chuyến bay phù hợp.</p>';
+      $("overviewMoreFlights").hidden = !expanded || rows.length <= limit;
     };
-    $('overviewExpandFlights').onclick=()=>{expanded=!expanded;overviewLimit=10;flightList();};
-    $('overviewMoreFlights').onclick=()=>{overviewLimit+=10;flightList();};flightList();
-    const carriers=Object.entries(flights.filter(f=>f.status!=='deleted').reduce((groups,f)=>{groups[f.airline||'Khác']=(groups[f.airline||'Khác']||0)+1;return groups;},{})).sort((a,b)=>b[1]-a[1]);
-    const total=carriers.reduce((sum,[,count])=>sum+count,0);
-    $('overviewCarriers').innerHTML=carriers.slice(0,6).map(([name,count])=>`<div class="carrier-line"><div><span>${safe(name)}</span><b>${count} chuyến</b></div><div class="carrier-track"><span style="width:${total?count/total*100:0}%"></span></div></div>`).join('') || '<p class="empty">Chưa có dữ liệu hãng bay.</p>';
+    $("overviewExpandFlights").onclick = () => {
+      expanded = !expanded;
+      overviewLimit = 10;
+      flightList();
+    };
+    $("overviewMoreFlights").onclick = () => {
+      overviewLimit += 10;
+      flightList();
+    };
+    flightList();
+    const carriers = Object.entries(
+      flights
+        .filter((f) => f.status !== "deleted")
+        .reduce((groups, f) => {
+          groups[f.airline || "Khác"] = (groups[f.airline || "Khác"] || 0) + 1;
+          return groups;
+        }, {}),
+    ).sort((a, b) => b[1] - a[1]);
+    const total = carriers.reduce((sum, [, count]) => sum + count, 0);
+    $("overviewCarriers").innerHTML =
+      carriers
+        .slice(0, 6)
+        .map(
+          ([name, count]) =>
+            `<div class="carrier-line"><div><span>${safe(name)}</span><b>${count} chuyến</b></div><div class="carrier-track"><span style="width:${total ? (count / total) * 100 : 0}%"></span></div></div>`,
+        )
+        .join("") || '<p class="empty">Chưa có dữ liệu hãng bay.</p>';
   }
   function renderServices() {
     const serviceCards = getServiceCatalog();
@@ -995,14 +1078,13 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
       0,
     );
     const avgOrder = totalBookings ? totalRevenue / totalBookings : 0;
-    const reportBookings = bookings.filter(
-      (booking) =>
-        reportRows.some(
-          (month) =>
-            getMonthKey(
-              booking.date || booking.createdAt || booking.departureDate,
-            ) === month.key,
-        ),
+    const reportBookings = bookings.filter((booking) =>
+      reportRows.some(
+        (month) =>
+          getMonthKey(
+            booking.date || booking.createdAt || booking.departureDate,
+          ) === month.key,
+      ),
     );
     const bookingStates = [
       {
@@ -1030,10 +1112,7 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
         color: "#ef4444",
       },
     ];
-    const pieTotal = bookingStates.reduce(
-      (sum, state) => sum + state.count,
-      0,
-    );
+    const pieTotal = bookingStates.reduce((sum, state) => sum + state.count, 0);
     let pieOffset = 0;
     const pieGradient = bookingStates
       .map((state) => {
@@ -1089,10 +1168,12 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
           </g>`;
       })
       .join("");
-    const chartGrid = [0, 1, 2, 3].map((step) => {
-      const y = chartTop + ((chartBottom - chartTop) / 3) * step;
-      return `<line class="report-chart-gridline" x1="0" y1="${y}" x2="${chartWidth}" y2="${y}"></line>`;
-    }).join("");
+    const chartGrid = [0, 1, 2, 3]
+      .map((step) => {
+        const y = chartTop + ((chartBottom - chartTop) / 3) * step;
+        return `<line class="report-chart-gridline" x1="0" y1="${y}" x2="${chartWidth}" y2="${y}"></line>`;
+      })
+      .join("");
     const statusLegend = bookingStates
       .map((state) => {
         const share = pieTotal ? Math.round((state.count / pieTotal) * 100) : 0;
@@ -1110,27 +1191,29 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
         previous: reportRows.at(-2)?.revenue || 0,
         current: reportRows.at(-1)?.revenue || 0,
       },
-    ].map((item) => {
-      const change =
-        item.previous === 0
-          ? item.current === 0
-            ? 0
-            : null
-          : ((item.current - item.previous) / item.previous) * 100;
-      const positive = change === null
-        ? item.current > 0
-        : change >= 0;
-      const barWidth = change === null
-        ? (item.current > 0 ? 50 : 0)
-        : Math.min(50, Math.abs(change) / 2);
-      const displayChange =
-        change === null
-          ? item.current > 0
-            ? "Mới"
-            : "0%"
-          : `${change > 0 ? "+" : ""}${change.toLocaleString("vi-VN", { maximumFractionDigits: 1 })}%`;
-      const barStyle = `--change-width:${barWidth}%;`;
-      return `
+    ]
+      .map((item) => {
+        const change =
+          item.previous === 0
+            ? item.current === 0
+              ? 0
+              : null
+            : ((item.current - item.previous) / item.previous) * 100;
+        const positive = change === null ? item.current > 0 : change >= 0;
+        const barWidth =
+          change === null
+            ? item.current > 0
+              ? 50
+              : 0
+            : Math.min(50, Math.abs(change) / 2);
+        const displayChange =
+          change === null
+            ? item.current > 0
+              ? "Mới"
+              : "0%"
+            : `${change > 0 ? "+" : ""}${change.toLocaleString("vi-VN", { maximumFractionDigits: 1 })}%`;
+        const barStyle = `--change-width:${barWidth}%;`;
+        return `
         <div class="report-change-row">
           <div class="report-change-heading">
             <strong>${item.label}</strong>
@@ -1141,7 +1224,8 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
           </div>
           <p>${safe(reportRows.at(-1)?.label || "")}: ${item.label === "Số vé" ? item.current : safe(money(item.current))} <span>·</span> tháng trước: ${item.label === "Số vé" ? item.previous : safe(money(item.previous))}</p>
         </div>`;
-    }).join("");
+      })
+      .join("");
     $("content").innerHTML = `
       <div class="card p-4 sm:p-5">
         <div class="flex flex-wrap items-center justify-between gap-3">
@@ -1331,11 +1415,11 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
       fillFlights($("flightSearch").value),
     );
     fillFlights(query);
-    const archived = flights.filter(f => f.status === "deleted");
+    const archived = flights.filter((f) => f.status === "deleted");
     if (archived.length) {
       const section = document.createElement("details");
       section.className = "card p-5 mt-5";
-      section.innerHTML = `<summary class="font-bold cursor-pointer">Chuyến đã lưu trữ (${archived.length})</summary><div class="space-y-3 mt-4">${archived.map(f => `<div class="flex justify-between gap-3"><span>${safe(f.id)} · ${date(f.date)} · ${safe(f.from)} → ${safe(f.to)}</span><button class="action" data-action="restore-flight" data-id="${safe(f.id)}">Khôi phục</button></div>`).join("")}</div>`;
+      section.innerHTML = `<summary class="font-bold cursor-pointer">Chuyến đã lưu trữ (${archived.length})</summary><div class="space-y-3 mt-4">${archived.map((f) => `<div class="flex justify-between gap-3"><span>${safe(f.id)} · ${date(f.date)} · ${safe(f.from)} → ${safe(f.to)}</span><button class="action" data-action="restore-flight" data-id="${safe(f.id)}">Khôi phục</button></div>`).join("")}</div>`;
       $("content").append(section);
     }
   }
@@ -1363,7 +1447,7 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
     bookingLimit = 10;
     const rows = bookings.slice().reverse();
     $("content").innerHTML =
-      `<div class="card"><div class="booking-tools"><h2 class="font-bold">Danh sách vé đã đặt <span id="bookingCount" class="text-slate-400 font-normal">(${rows.length})</span></h2><div class="booking-filters"><input id="bookingSearch" class="field" aria-label="Tìm vé đã đặt" placeholder="Tìm mã vé, hành khách, chuyến bay"><select id="bookingStatus" class="field" aria-label="Lọc theo trạng thái vé"><option value="all">Tất cả trạng thái vé</option><option value="confirmed">Đã xác nhận</option><option value="pending">Chờ thanh toán</option><option value="cancelled">Đã hủy</option></select><select id="paymentStatus" class="field" aria-label="Lọc theo trạng thái thanh toán"><option value="all">Tất cả thanh toán</option><option value="pending">Chưa xác nhận</option><option value="processing">Đang xác nhận</option><option value="paid">Đã thanh toán</option><option value="failed">Thất bại</option><option value="expired">Hết hạn</option></select><button id="exportBookingsCsv" class="secondary">Xuất CSV</button></div></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Mã vé</th><th>Hành khách</th><th>Chuyến bay</th><th>Ngày đi</th><th>Tổng tiền</th><th>Trạng thái vé</th><th>Thanh toán</th><th>Thao tác</th></tr></thead><tbody id="bookingRows"></tbody></table></div><div class="p-4 flex items-center justify-between gap-3"><span id="bookingProgress" class="text-sm text-slate-500"></span><button id="moreBookings" class="secondary hidden">Xem thêm 10 vé</button></div></div>`;
+      `<div class="card"><div class="booking-tools"><h2 class="font-bold">Danh sách vé đã đặt <span id="bookingCount" class="text-slate-400 font-normal">(${rows.length})</span></h2><div class="booking-filters"><input id="bookingSearch" class="field" aria-label="Tìm vé đã đặt" placeholder="Tìm mã vé, hành khách, chuyến bay"><select id="bookingStatus" class="field" aria-label="Lọc theo trạng thái vé"><option value="all">Tất cả trạng thái vé</option><option value="confirmed">Đã xác nhận</option><option value="pending">Chờ thanh toán</option><option value="cancelled">Đã hủy</option></select><select id="paymentStatus" class="field" aria-label="Lọc theo trạng thái thanh toán"><option value="all">Tất cả thanh toán</option><option value="pending">Chưa xác nhận</option><option value="processing">Đang xác nhận</option><option value="paid">Đã thanh toán</option><option value="failed">Thất bại</option><option value="expired">Hết hạn</option></select><button id="exportBookingsCsv" class="secondary">Xuất CSV</button></div></div><div class="table-scroll"><table class="data-table booking-table"><thead><tr><th>Mã vé</th><th>Hành khách</th><th>Chuyến bay</th><th>Ngày đi</th><th>Tổng tiền</th><th>Trạng thái vé</th><th>Thanh toán & thao tác</th></tr></thead><tbody id="bookingRows"></tbody></table></div><div class="p-4 flex items-center justify-between gap-3"><span id="bookingProgress" class="text-sm text-slate-500"></span><button id="moreBookings" class="secondary hidden">Xem thêm 10 vé</button></div></div>`;
     $("bookingSearch").addEventListener("input", () => {
       bookingLimit = 10;
       fillBookings();
@@ -1440,10 +1524,16 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
                 .join(", ") ||
               booking.passenger?.name ||
               "-";
-            return `<tr><td><b>${safe(code || "-")}</b></td><td>${safe(passenger)}</td><td>${safe(booking.from || booking.flight?.from || "-")} → ${safe(booking.to || booking.flight?.to || "-")}</td><td>${date(booking.date || booking.departureDate)}</td><td>${money(booking.totalPrice ?? booking.total)}</td><td><span class="badge ${bookingStatus === "cancelled" ? "cancel" : bookingStatus === "pending" ? "off" : ""}">${status(booking.status)}</span></td><td><span class="badge ${paymentStatus === "paid" ? "" : paymentStatus === "pending" || paymentStatus === "processing" ? "off" : "cancel"}">${safe(paymentStatusLabel(booking))}</span></td><td><button class="action" data-action="booking-detail" data-id="${safe(code)}">Chi tiết</button>${bookingStatus !== "cancelled" && paymentStatus !== "paid" ? ` · <button class="action" data-action="confirm-booking" data-id="${safe(code)}">Xác nhận đã nhận tiền</button>` : ""}${bookingStatus === "cancelled" ? "" : ` · <button class="action danger" data-action="cancel" data-id="${safe(code)}">Hủy vé</button>`}</td></tr>`;
+            const ticketStatusClass =
+              bookingStatus === "cancelled"
+                ? "booking-status--cancelled"
+                : bookingStatus === "pending"
+                  ? "booking-status--pending"
+                  : "booking-status--confirmed";
+            return `<tr><td><b>${safe(code || "-")}</b></td><td>${safe(passenger)}</td><td>${safe(booking.from || booking.flight?.from || "-")} → ${safe(booking.to || booking.flight?.to || "-")}</td><td>${date(booking.date || booking.departureDate)}</td><td>${money(booking.totalPrice ?? booking.total)}</td><td><span class="booking-status ${ticketStatusClass}">${status(booking.status)}</span></td><td><div class="booking-control-cell"><span class="badge ${paymentStatus === "paid" ? "" : paymentStatus === "pending" || paymentStatus === "processing" ? "off" : "cancel"}">${safe(paymentStatusLabel(booking))}</span><div class="booking-actions"><button class="action" data-action="booking-detail" data-id="${safe(code)}">Chi tiết</button><button class="action" data-action="edit-booking" data-id="${safe(code)}">Sửa</button></div></div></td></tr>`;
           })
           .join("")
-      : '<tr><td colspan="8" class="empty">Không tìm thấy vé phù hợp.</td></tr>';
+      : '<tr><td colspan="7" class="empty">Không tìm thấy vé phù hợp.</td></tr>';
   }
   function options(select, entries, value) {
     select.innerHTML = entries
@@ -1495,7 +1585,8 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
           status: "active",
         }[key] ??
         "";
-    form.elements.date.min = f?.date && f.date < localToday() ? f.date : localToday();
+    form.elements.date.min =
+      f?.date && f.date < localToday() ? f.date : localToday();
     form.elements.id.disabled = !!editing;
     $("modalTitle").textContent = editing
       ? "Sửa chuyến bay"
@@ -1536,7 +1627,10 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
       error = "Điểm đi và điểm đến phải khác nhau.";
     else if (!validDate(data.date) || !data.departure || !data.arrival)
       error = "Vui lòng nhập đủ ngày và giờ bay.";
-    else if (data.date < localToday() && (!editing || data.date !== flights.find(x => x.id === editing)?.date))
+    else if (
+      data.date < localToday() &&
+      (!editing || data.date !== flights.find((x) => x.id === editing)?.date)
+    )
       error = "Ngày bay không được ở trong quá khứ.";
     else if (data.departure === data.arrival)
       error = "Giờ đi và giờ đến không được trùng nhau.";
@@ -1560,8 +1654,16 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
       data.baggage > 100
     )
       error = "Hành lý phải là số nguyên từ 0 đến 100 kg.";
-    if (!error && editing && data.status === "cancelled" && bookings.some(b => b.flightId === editing && bookingState(b) !== "cancelled"))
-      error = "Chuyến bay còn vé chưa hủy. Hãy xử lý các vé liên quan trước khi hủy chuyến.";
+    if (
+      !error &&
+      editing &&
+      data.status === "cancelled" &&
+      bookings.some(
+        (b) => b.flightId === editing && bookingState(b) !== "cancelled",
+      )
+    )
+      error =
+        "Chuyến bay còn vé chưa hủy. Hãy xử lý các vé liên quan trước khi hủy chuyến.";
     if (error) {
       $("formError").textContent = error;
       return;
@@ -1633,7 +1735,8 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
       );
       if (
         flightIndex >= 0 &&
-        (bookings[index].inventoryReserved === true || (bookings[index].flightId && !bookings[index].flight)) &&
+        (bookings[index].inventoryReserved === true ||
+          (bookings[index].flightId && !bookings[index].flight)) &&
         Number.isFinite(Number(flights[flightIndex].seats))
       ) {
         flights[flightIndex].seats =
@@ -1698,7 +1801,7 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
     if (b) {
       page = b.dataset.go;
       render();
-      window.scrollTo({top:0,behavior:'instant'});
+      window.scrollTo({ top: 0, behavior: "instant" });
     }
   });
   window.addEventListener("storage", (event) => {

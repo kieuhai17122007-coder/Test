@@ -1,5 +1,9 @@
 import { normalizeFlight, validateSelection, flightKey } from "./seat-store.js";
-import { paymentConfig, paymentAvailable, manualQrAvailable } from "./payment-config.js";
+import {
+  paymentConfig,
+  paymentAvailable,
+  manualQrAvailable,
+} from "./payment-config.js";
 import "./auth.js";
 
 const auth = window.TripGoAuth;
@@ -13,28 +17,58 @@ const paymentPanel = document.getElementById("paymentPanel");
 const params = new URLSearchParams(window.location.search);
 const requestedBookingCode = params.get("bookingCode");
 const currentUser = auth.getCurrentUser();
-const selectedFlight = normalizeFlight(JSON.parse(localStorage.getItem("tripgo_selected_flight") || "{}"));
-const selectedSeats = JSON.parse(localStorage.getItem("tripgo_selected_seats") || "[]");
-const passenger = JSON.parse(localStorage.getItem("tripgo_passenger") || "null");
+const selectedFlight = normalizeFlight(
+  JSON.parse(localStorage.getItem("tripgo_selected_flight") || "{}"),
+);
+const selectedSeats = JSON.parse(
+  localStorage.getItem("tripgo_selected_seats") || "[]",
+);
+const passenger = JSON.parse(
+  localStorage.getItem("tripgo_passenger") || "null",
+);
 const passengerCount = Math.max(1, Number(selectedFlight.passengers || 1));
 const unitPrice = Number(selectedFlight.price || 0);
 const totalPrice = unitPrice * passengerCount;
 let activeBooking = requestedBookingCode
-  ? auth.getBookings().find((booking) =>
-      booking.bookingCode === requestedBookingCode &&
-      booking.userEmail?.toLowerCase() === currentUser?.email?.toLowerCase()
-    )
+  ? auth
+      .getBookings()
+      .find(
+        (booking) =>
+          booking.bookingCode === requestedBookingCode &&
+          booking.userEmail?.toLowerCase() ===
+            currentUser?.email?.toLowerCase(),
+      )
   : null;
 let paymentState = activeBooking?.paymentState || "pending";
 let providerPaymentId = activeBooking?.providerPaymentId || "";
 let statusTimer;
-const hasVerifiedPayment = (booking) => booking?.paymentState === "paid" &&
+const hasVerifiedPayment = (booking) =>
+  booking?.paymentState === "paid" &&
   !/demo|mô phỏng/i.test(booking.paymentStatus || "");
 const paymentMethods = {
-  qr: { label: "Quét mã QR", heading: "Quét mã QR để thanh toán", instructions: "Mở ứng dụng ngân hàng và quét mã QR để hoàn tất thanh toán." },
-  "domestic-card": { label: "Thẻ nội địa", heading: "Thanh toán bằng thẻ nội địa", instructions: "Bạn sẽ được chuyển đến cổng thanh toán bảo mật để nhập thông tin thẻ." },
-  "international-card": { label: "Thẻ quốc tế", heading: "Thanh toán bằng thẻ quốc tế", instructions: "Bạn sẽ được chuyển đến cổng thanh toán bảo mật để hoàn tất giao dịch." },
-  ewallet: { label: "Ví điện tử", heading: "Thanh toán bằng ví điện tử", instructions: "Bạn sẽ được chuyển đến ứng dụng ví điện tử để xác nhận thanh toán." }
+  qr: {
+    label: "Quét mã QR",
+    heading: "Quét mã QR để thanh toán",
+    instructions: "Mở ứng dụng ngân hàng và quét mã QR để hoàn tất thanh toán.",
+  },
+  "domestic-card": {
+    label: "Thẻ nội địa",
+    heading: "Thanh toán bằng thẻ nội địa",
+    instructions:
+      "Bạn sẽ được chuyển đến cổng thanh toán bảo mật để nhập thông tin thẻ.",
+  },
+  "international-card": {
+    label: "Thẻ quốc tế",
+    heading: "Thanh toán bằng thẻ quốc tế",
+    instructions:
+      "Bạn sẽ được chuyển đến cổng thanh toán bảo mật để hoàn tất giao dịch.",
+  },
+  ewallet: {
+    label: "Ví điện tử",
+    heading: "Thanh toán bằng ví điện tử",
+    instructions:
+      "Bạn sẽ được chuyển đến ứng dụng ví điện tử để xác nhận thanh toán.",
+  },
 };
 
 function formatPrice(value) {
@@ -44,7 +78,9 @@ function formatPrice(value) {
 function formatDate(value) {
   if (!value) return "—";
   const date = new Date(`${value}T00:00:00`);
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString("vi-VN");
+  return Number.isNaN(date.getTime())
+    ? value
+    : date.toLocaleDateString("vi-VN");
 }
 
 function showError(message) {
@@ -71,7 +107,8 @@ function renderSummary(booking = activeBooking) {
   const passengerName = booking?.passenger?.fullName || passenger?.name || "—";
   const route = document.createElement("div");
   route.className = "payment-route";
-  route.innerHTML = "<div><small></small><strong></strong></div><span aria-hidden=\"true\">→</span><div><small></small><strong></strong></div>";
+  route.innerHTML =
+    '<div><small></small><strong></strong></div><span aria-hidden="true">→</span><div><small></small><strong></strong></div>';
   route.querySelectorAll("small")[0].textContent = flight.from || "—";
   route.querySelectorAll("strong")[0].textContent = flight.departure || "—";
   route.querySelectorAll("small")[1].textContent = flight.to || "—";
@@ -81,16 +118,26 @@ function renderSummary(booking = activeBooking) {
   lines.className = "payment-lines";
   for (const [label, value] of [
     ["Mã đơn hàng", booking?.bookingCode || "Tạo sau khi tiếp tục"],
-    ["Hãng / chuyến bay", [flight.airline, flight.flightNumber || flight.id].filter(Boolean).join(" · ") || "—"],
-    ["Ngày bay", formatDate(booking?.date || booking?.departureDate || flight.date)],
+    [
+      "Hãng / chuyến bay",
+      [flight.airline, flight.flightNumber || flight.id]
+        .filter(Boolean)
+        .join(" · ") || "—",
+    ],
+    [
+      "Ngày bay",
+      formatDate(booking?.date || booking?.departureDate || flight.date),
+    ],
     ["Hành khách", `${passengerName} · ${count} người`],
     ["Ghế", seats],
     ["Loại vé / hạng", booking?.ticketType || flight.classType || "Phổ thông"],
-    ["Tổng tiền", formatPrice(price)]
+    ["Tổng tiền", formatPrice(price)],
   ]) {
     const line = document.createElement("p");
     const name = document.createElement("span");
-    const content = document.createElement(label === "Tổng tiền" ? "strong" : "b");
+    const content = document.createElement(
+      label === "Tổng tiền" ? "strong" : "b",
+    );
     if (label === "Tổng tiền") line.className = "total-line";
     name.textContent = label;
     content.textContent = value;
@@ -102,7 +149,9 @@ function renderSummary(booking = activeBooking) {
 
 function saveBooking(updatedBooking) {
   const bookings = auth.getBookings();
-  const index = bookings.findIndex((booking) => booking.bookingCode === updatedBooking.bookingCode);
+  const index = bookings.findIndex(
+    (booking) => booking.bookingCode === updatedBooking.bookingCode,
+  );
   if (index < 0) throw new Error("Không tìm thấy đơn hàng cần cập nhật.");
   bookings[index] = updatedBooking;
   auth.saveBookings(bookings);
@@ -118,7 +167,9 @@ function safeQrUrl(value) {
   if (!value) return "";
   try {
     const url = new URL(value, window.location.origin);
-    return url.origin === window.location.origin || url.protocol === "https:" ? url.href : "";
+    return url.origin === window.location.origin || url.protocol === "https:"
+      ? url.href
+      : "";
   } catch {
     return "";
   }
@@ -128,7 +179,9 @@ function safeCheckoutUrl(value) {
   if (!value) return "";
   try {
     const url = new URL(value, window.location.origin);
-    return url.origin === window.location.origin || url.protocol === "https:" ? url.href : "";
+    return url.origin === window.location.origin || url.protocol === "https:"
+      ? url.href
+      : "";
   } catch {
     return "";
   }
@@ -152,7 +205,10 @@ function displayQr(qrImageUrl) {
     image.hidden = true;
     image.removeAttribute("src");
     placeholder.hidden = false;
-    showPaymentMessage("Không thể tải mã QR từ cổng thanh toán. Vui lòng tạo yêu cầu mới hoặc liên hệ hỗ trợ.", "error");
+    showPaymentMessage(
+      "Không thể tải mã QR từ cổng thanh toán. Vui lòng tạo yêu cầu mới hoặc liên hệ hỗ trợ.",
+      "error",
+    );
   };
   image.src = url;
 }
@@ -163,15 +219,40 @@ function renderPaymentState() {
   const ticketLink = document.getElementById("viewTicket");
   const cancelButton = document.getElementById("cancelPayment");
   const states = {
-    pending: ["Chờ thanh toán", activeBooking?.providerPaymentId
-      ? "Hoàn tất thanh toán theo hướng dẫn từ cổng thanh toán. TripGo sẽ cập nhật sau khi giao dịch được xác minh."
-      : "Quét mã VietQR hoặc nhập thông tin tài khoản bên cạnh. Ghi đúng số tiền và nội dung chuyển khoản. Hiện website chưa tự nhận giao dịch; đơn sẽ giữ trạng thái chờ đến khi TripGo đối soát.", "info"],
-    processing: ["Đang xác nhận", "TripGo đang kiểm tra giao dịch với cổng thanh toán. Vui lòng không thanh toán lặp lại.", "info"],
-    cancelling: ["Đang hủy yêu cầu", "TripGo đang yêu cầu cổng thanh toán hủy giao dịch.", "info"],
+    pending: [
+      "Chờ thanh toán",
+      activeBooking?.providerPaymentId
+        ? "Hoàn tất thanh toán theo hướng dẫn từ cổng thanh toán. TripGo sẽ cập nhật sau khi giao dịch được xác minh."
+        : "Quét mã VietQR hoặc nhập thông tin tài khoản bên cạnh. Ghi đúng số tiền và nội dung chuyển khoản. Hiện website chưa tự nhận giao dịch; đơn sẽ giữ trạng thái chờ đến khi TripGo đối soát.",
+      "info",
+    ],
+    processing: [
+      "Đang xác nhận",
+      "TripGo đang kiểm tra giao dịch với cổng thanh toán. Vui lòng không thanh toán lặp lại.",
+      "info",
+    ],
+    cancelling: [
+      "Đang hủy yêu cầu",
+      "TripGo đang yêu cầu cổng thanh toán hủy giao dịch.",
+      "info",
+    ],
     paid: ["Thanh toán thành công", "Giao dịch đã được xác nhận.", "success"],
-    failed: ["Thanh toán thất bại", activeBooking?.paymentFailureReason || "Giao dịch chưa được xác nhận. Bạn có thể tạo yêu cầu thanh toán mới.", "error"],
-    expired: ["Đã hết hạn", "Yêu cầu thanh toán đã hết hạn. Tạo yêu cầu mới để tiếp tục.", "error"],
-    cancelled: ["Đã hủy", "Đơn hàng đã được hủy và chưa được xác nhận thanh toán.", "error"]
+    failed: [
+      "Thanh toán thất bại",
+      activeBooking?.paymentFailureReason ||
+        "Giao dịch chưa được xác nhận. Bạn có thể tạo yêu cầu thanh toán mới.",
+      "error",
+    ],
+    expired: [
+      "Đã hết hạn",
+      "Yêu cầu thanh toán đã hết hạn. Tạo yêu cầu mới để tiếp tục.",
+      "error",
+    ],
+    cancelled: [
+      "Đã hủy",
+      "Đơn hàng đã được hủy và chưa được xác nhận thanh toán.",
+      "error",
+    ],
   };
   const [label, message, messageState] = states[paymentState] || states.pending;
   badge.textContent = label;
@@ -187,30 +268,50 @@ function renderPaymentState() {
   ticketLink.hidden = paymentState !== "paid";
   ticketLink.href = `/src/pages/booking-success.html?bookingCode=${encodeURIComponent(activeBooking.bookingCode)}`;
   cancelButton.hidden = paymentState === "paid" || paymentState === "cancelled";
-  cancelButton.disabled = paymentState === "processing" || paymentState === "cancelling";
-  document.getElementById("copyAccount").disabled = !document.getElementById("accountNumber").textContent.trim() ||
+  cancelButton.disabled =
+    paymentState === "processing" || paymentState === "cancelling";
+  document.getElementById("copyAccount").disabled =
+    !document.getElementById("accountNumber").textContent.trim() ||
     document.getElementById("accountNumber").textContent === "Chưa cấu hình";
 }
 
 function displayPaymentRequest(payment) {
   setText("orderCode", activeBooking.bookingCode);
   setText("qrAmount", formatPrice(activeBooking.totalPrice));
-  setText("bankName", payment.bankName || paymentConfig.bankName || "Chưa cấu hình");
-  setText("accountName", payment.accountName || paymentConfig.accountName || "Chưa cấu hình");
-  setText("accountNumber", payment.accountNumber || paymentConfig.accountNumber || "Chưa cấu hình");
-  setText("transferContent", payment.transferContent || `TRIPGO ${activeBooking.bookingCode}`);
-  const method = paymentMethods[activeBooking.paymentMethod] || paymentMethods.qr;
+  setText(
+    "bankName",
+    payment.bankName || paymentConfig.bankName || "Chưa cấu hình",
+  );
+  setText(
+    "accountName",
+    payment.accountName || paymentConfig.accountName || "Chưa cấu hình",
+  );
+  setText(
+    "accountNumber",
+    payment.accountNumber || paymentConfig.accountNumber || "Chưa cấu hình",
+  );
+  setText(
+    "transferContent",
+    payment.transferContent || `TRIPGO ${activeBooking.bookingCode}`,
+  );
+  const method =
+    paymentMethods[activeBooking.paymentMethod] || paymentMethods.qr;
   document.getElementById("qrTitle").textContent = method.heading;
-  document.getElementById("paymentMethodTitle").textContent = payment.qrImageUrl || activeBooking.qrImageUrl || manualQrAvailable
-    ? "Quét mã bằng ứng dụng ngân hàng"
-    : method.heading;
-  document.getElementById("paymentInstructions").textContent = activeBooking.paymentMethod === "qr" && !activeBooking.providerPaymentId
-    ? "Kiểm tra đúng người nhận KIEU DUC HAI, nhập số tiền và nội dung chuyển khoản hiển thị bên cạnh. Trạng thái vé chờ TripGo xác nhận."
-    : method.instructions;
+  document.getElementById("paymentMethodTitle").textContent =
+    payment.qrImageUrl || activeBooking.qrImageUrl || manualQrAvailable
+      ? "Quét mã bằng ứng dụng ngân hàng"
+      : method.heading;
+  document.getElementById("paymentInstructions").textContent =
+    activeBooking.paymentMethod === "qr" && !activeBooking.providerPaymentId
+      ? "Kiểm tra đúng người nhận KIEU DUC HAI, nhập số tiền và nội dung chuyển khoản hiển thị bên cạnh. Trạng thái vé chờ TripGo xác nhận."
+      : method.instructions;
   const showBankDetails = activeBooking.paymentMethod === "qr";
   document.getElementById("qrPaymentContent").hidden = !showBankDetails;
-  displayQr(payment.qrImageUrl || activeBooking.qrImageUrl ||
-    (activeBooking.paymentMethod === "qr" ? paymentConfig.qrImageUrl : ""));
+  displayQr(
+    payment.qrImageUrl ||
+      activeBooking.qrImageUrl ||
+      (activeBooking.paymentMethod === "qr" ? paymentConfig.qrImageUrl : ""),
+  );
   paymentChoice.hidden = true;
   paymentPanel.hidden = false;
   renderPaymentState();
@@ -226,15 +327,28 @@ function showPaymentPanel(booking, resumeProviderRequest = false) {
     bankName: booking.bankName,
     accountName: booking.accountName,
     accountNumber: booking.accountNumber,
-    transferContent: booking.transferContent
+    transferContent: booking.transferContent,
   });
-  if (paymentAvailable && providerPaymentId && ["pending", "processing"].includes(paymentState)) {
+  if (
+    paymentAvailable &&
+    providerPaymentId &&
+    ["pending", "processing"].includes(paymentState)
+  ) {
     startPaymentPolling();
-  } else if (paymentAvailable && resumeProviderRequest && !providerPaymentId && paymentState === "pending") {
+  } else if (
+    paymentAvailable &&
+    resumeProviderRequest &&
+    !providerPaymentId &&
+    paymentState === "pending"
+  ) {
     requestProviderPayment().catch((error) => {
       console.error("Không thể khôi phục yêu cầu thanh toán:", error);
       paymentState = "failed";
-      updateBooking({ paymentState, paymentStatus: "Không thể tạo yêu cầu thanh toán", paymentFailureReason: error.message });
+      updateBooking({
+        paymentState,
+        paymentStatus: "Không thể tạo yêu cầu thanh toán",
+        paymentFailureReason: error.message,
+      });
       renderPaymentState();
       showPaymentMessage(error.message, "error");
     });
@@ -257,7 +371,10 @@ function validateDraft() {
   if (!Number.isFinite(totalPrice) || totalPrice <= 0) {
     return "Tổng tiền chuyến bay không hợp lệ. Vui lòng chọn lại chuyến bay.";
   }
-  if (localStorage.getItem("tripgo_selected_seat_flight") !== flightKey(selectedFlight)) {
+  if (
+    localStorage.getItem("tripgo_selected_seat_flight") !==
+    flightKey(selectedFlight)
+  ) {
     return "Vui lòng quay lại chọn ghế cho chuyến bay này.";
   }
   return validateSelection(selectedFlight, selectedSeats);
@@ -275,7 +392,7 @@ function createBooking(method) {
       fullName: passenger.name,
       email: passenger.email,
       phone: passenger.phone,
-      document: passenger.document
+      document: passenger.document,
     },
     flightId: selectedFlight.id,
     date: selectedFlight.date,
@@ -288,7 +405,7 @@ function createBooking(method) {
       from: selectedFlight.from,
       to: selectedFlight.to,
       departure: selectedFlight.departure,
-      arrival: selectedFlight.arrival
+      arrival: selectedFlight.arrival,
     },
     seat: selectedSeats.join(", "),
     seats: selectedSeats,
@@ -303,7 +420,7 @@ function createBooking(method) {
     paymentState: "pending",
     paymentMethod: method,
     paymentAttemptId: crypto.randomUUID(),
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   };
   auth.saveBookings([...bookings, booking]);
   activeBooking = booking;
@@ -312,13 +429,15 @@ function createBooking(method) {
 
 async function requestProviderPayment() {
   if (!paymentAvailable) {
-    throw new Error("Thanh toán trực tuyến hiện chưa khả dụng. Vui lòng thử lại sau.");
+    throw new Error(
+      "Thanh toán trực tuyến hiện chưa khả dụng. Vui lòng thử lại sau.",
+    );
   }
   const response = await fetch(paymentConfig.createEndpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Idempotency-Key": `${activeBooking.bookingCode}-${activeBooking.paymentAttemptId}`
+      "Idempotency-Key": `${activeBooking.bookingCode}-${activeBooking.paymentAttemptId}`,
     },
     body: JSON.stringify({
       bookingCode: activeBooking.bookingCode,
@@ -326,19 +445,29 @@ async function requestProviderPayment() {
       method: activeBooking.paymentMethod,
       returnUrl: `${window.location.origin}/src/pages/payment.html?bookingCode=${encodeURIComponent(activeBooking.bookingCode)}`,
       transferContent: `TRIPGO ${activeBooking.bookingCode}`,
-      currency: "VND"
-    })
+      currency: "VND",
+    }),
   });
-  if (!response.ok) throw new Error(`Cổng thanh toán không tạo được yêu cầu (HTTP ${response.status}).`);
+  if (!response.ok)
+    throw new Error(
+      `Cổng thanh toán không tạo được yêu cầu (HTTP ${response.status}).`,
+    );
   const payment = await response.json();
   const checkoutUrl = safeCheckoutUrl(payment.checkoutUrl);
   const qrImageUrl = safeQrUrl(payment.qrImageUrl);
   const qrMethod = activeBooking.paymentMethod === "qr";
-  if (!payment.paymentId || !["pending", "processing"].includes(payment.status) ||
-      Number(payment.amount) !== Number(activeBooking.totalPrice) ||
-      (qrMethod && (!qrImageUrl || payment.transferContent !== `TRIPGO ${activeBooking.bookingCode}`)) ||
-      (!qrMethod && !checkoutUrl)) {
-    throw new Error("Phản hồi từ cổng thanh toán không hợp lệ hoặc số tiền không khớp.");
+  if (
+    !payment.paymentId ||
+    !["pending", "processing"].includes(payment.status) ||
+    Number(payment.amount) !== Number(activeBooking.totalPrice) ||
+    (qrMethod &&
+      (!qrImageUrl ||
+        payment.transferContent !== `TRIPGO ${activeBooking.bookingCode}`)) ||
+    (!qrMethod && !checkoutUrl)
+  ) {
+    throw new Error(
+      "Phản hồi từ cổng thanh toán không hợp lệ hoặc số tiền không khớp.",
+    );
   }
   providerPaymentId = String(payment.paymentId);
   paymentState = payment.status;
@@ -351,7 +480,8 @@ async function requestProviderPayment() {
     bankName: payment.bankName || "",
     accountName: payment.accountName || "",
     accountNumber: payment.accountNumber || "",
-    transferContent: payment.transferContent || `TRIPGO ${activeBooking.bookingCode}`
+    transferContent:
+      payment.transferContent || `TRIPGO ${activeBooking.bookingCode}`,
   });
   displayPaymentRequest(payment);
   if (!qrMethod) {
@@ -362,23 +492,48 @@ async function requestProviderPayment() {
 }
 
 function statusUrl() {
-  return paymentConfig.statusEndpoint.replace("{paymentId}", encodeURIComponent(providerPaymentId));
+  return paymentConfig.statusEndpoint.replace(
+    "{paymentId}",
+    encodeURIComponent(providerPaymentId),
+  );
 }
 
 async function checkProviderPayment() {
-  if (!providerPaymentId || !paymentConfig.statusEndpoint || !["pending", "processing"].includes(paymentState)) return;
+  if (
+    !providerPaymentId ||
+    !paymentConfig.statusEndpoint ||
+    !["pending", "processing"].includes(paymentState)
+  )
+    return;
   try {
-    const response = await fetch(statusUrl(), { headers: { Accept: "application/json" } });
-    if (!response.ok) throw new Error(`Không kiểm tra được giao dịch (HTTP ${response.status}).`);
+    const response = await fetch(statusUrl(), {
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok)
+      throw new Error(
+        `Không kiểm tra được giao dịch (HTTP ${response.status}).`,
+      );
     const payment = await response.json();
     if (paymentState === "cancelling" || paymentState === "cancelled") return;
-    if (payment.amount !== undefined && Number(payment.amount) !== Number(activeBooking.totalPrice)) {
+    if (
+      payment.amount !== undefined &&
+      Number(payment.amount) !== Number(activeBooking.totalPrice)
+    ) {
       throw new Error("Số tiền giao dịch không khớp với đơn hàng.");
     }
-    if (payment.status === "paid" && Number(payment.amount) !== Number(activeBooking.totalPrice)) {
-      throw new Error("Cổng thanh toán chưa xác nhận chính xác số tiền đã thanh toán.");
+    if (
+      payment.status === "paid" &&
+      Number(payment.amount) !== Number(activeBooking.totalPrice)
+    ) {
+      throw new Error(
+        "Cổng thanh toán chưa xác nhận chính xác số tiền đã thanh toán.",
+      );
     }
-    if (!["pending", "processing", "paid", "failed", "expired"].includes(payment.status)) {
+    if (
+      !["pending", "processing", "paid", "failed", "expired"].includes(
+        payment.status,
+      )
+    ) {
       throw new Error("Trạng thái giao dịch từ cổng thanh toán không hợp lệ.");
     }
     paymentState = payment.status;
@@ -387,7 +542,7 @@ async function checkProviderPayment() {
         status: "Đã đặt vé",
         paymentStatus: "Đã thanh toán",
         paymentState,
-        paidAt: new Date().toISOString()
+        paidAt: new Date().toISOString(),
       });
       clearInterval(statusTimer);
       localStorage.removeItem("tripgo_selected_seats");
@@ -396,15 +551,24 @@ async function checkProviderPayment() {
     } else {
       updateBooking({
         paymentState,
-        paymentStatus: paymentState === "failed" ? "Thanh toán thất bại" : paymentState === "expired" ? "Yêu cầu thanh toán hết hạn" : "Đang xác nhận",
-        paymentFailureReason: payment.reason || ""
+        paymentStatus:
+          paymentState === "failed"
+            ? "Thanh toán thất bại"
+            : paymentState === "expired"
+              ? "Yêu cầu thanh toán hết hạn"
+              : "Đang xác nhận",
+        paymentFailureReason: payment.reason || "",
       });
-      if (["failed", "expired"].includes(paymentState)) clearInterval(statusTimer);
+      if (["failed", "expired"].includes(paymentState))
+        clearInterval(statusTimer);
     }
     renderPaymentState();
   } catch (error) {
     console.error("Không thể xác minh trạng thái thanh toán:", error);
-    showPaymentMessage("Chưa kiểm tra được trạng thái giao dịch. TripGo sẽ thử lại; vui lòng không thanh toán lần nữa.", "error");
+    showPaymentMessage(
+      "Chưa kiểm tra được trạng thái giao dịch. TripGo sẽ thử lại; vui lòng không thanh toán lần nữa.",
+      "error",
+    );
   }
 }
 
@@ -430,7 +594,7 @@ async function retryProviderPayment() {
       bankName: "",
       accountName: "",
       accountNumber: "",
-      transferContent: `TRIPGO ${activeBooking.bookingCode}`
+      transferContent: `TRIPGO ${activeBooking.bookingCode}`,
     });
     providerPaymentId = "";
     displayPaymentRequest({});
@@ -438,7 +602,11 @@ async function retryProviderPayment() {
   } catch (error) {
     console.error("Không thể tạo yêu cầu thanh toán:", error);
     paymentState = "failed";
-    updateBooking({ paymentState, paymentStatus: "Không thể tạo yêu cầu thanh toán", paymentFailureReason: error.message });
+    updateBooking({
+      paymentState,
+      paymentStatus: "Không thể tạo yêu cầu thanh toán",
+      paymentFailureReason: error.message,
+    });
     renderPaymentState();
     showPaymentMessage(error.message, "error");
   } finally {
@@ -448,7 +616,12 @@ async function retryProviderPayment() {
 
 async function cancelPayment() {
   if (!activeBooking || paymentState === "paid") return;
-  if (!window.confirm("Hủy đơn hàng này? Đơn hàng sẽ không được xác nhận là đã thanh toán.")) return;
+  if (
+    !window.confirm(
+      "Hủy đơn hàng này? Đơn hàng sẽ không được xác nhận là đã thanh toán.",
+    )
+  )
+    return;
   const button = document.getElementById("cancelPayment");
   const previousState = paymentState;
   clearInterval(statusTimer);
@@ -458,17 +631,30 @@ async function cancelPayment() {
   if (providerPaymentId) {
     try {
       if (!paymentConfig.cancelEndpoint) {
-        throw new Error("Cổng thanh toán chưa hỗ trợ API hủy giao dịch. Đơn hàng chưa bị thay đổi.");
+        throw new Error(
+          "Cổng thanh toán chưa hỗ trợ API hủy giao dịch. Đơn hàng chưa bị thay đổi.",
+        );
       }
-      const response = await fetch(paymentConfig.cancelEndpoint.replace("{paymentId}", encodeURIComponent(providerPaymentId)), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookingCode: activeBooking.bookingCode })
-      });
-      if (!response.ok) throw new Error(`Cổng thanh toán không thể hủy giao dịch (HTTP ${response.status}).`);
+      const response = await fetch(
+        paymentConfig.cancelEndpoint.replace(
+          "{paymentId}",
+          encodeURIComponent(providerPaymentId),
+        ),
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ bookingCode: activeBooking.bookingCode }),
+        },
+      );
+      if (!response.ok)
+        throw new Error(
+          `Cổng thanh toán không thể hủy giao dịch (HTTP ${response.status}).`,
+        );
       const payment = await response.json();
       if (payment.status !== "cancelled") {
-        throw new Error("Cổng thanh toán chưa xác nhận hủy giao dịch. Đơn hàng chưa bị thay đổi.");
+        throw new Error(
+          "Cổng thanh toán chưa xác nhận hủy giao dịch. Đơn hàng chưa bị thay đổi.",
+        );
       }
     } catch (error) {
       console.error("Không thể hủy giao dịch thanh toán:", error);
@@ -483,7 +669,7 @@ async function cancelPayment() {
   updateBooking({
     status: "Đã hủy",
     paymentStatus: "Đã hủy bởi khách hàng — chưa thanh toán",
-    paymentState
+    paymentState,
   });
   localStorage.removeItem("tripgo_selected_seats");
   localStorage.removeItem("tripgo_selected_seat");
@@ -499,14 +685,21 @@ async function copyValue(value, label) {
     showPaymentMessage(`Đã sao chép ${label}.`, "success");
   } catch (error) {
     console.error("Không thể sao chép thông tin thanh toán:", error);
-    showPaymentMessage("Trình duyệt không cho phép sao chép. Vui lòng chọn và sao chép nội dung thủ công.", "error");
+    showPaymentMessage(
+      "Trình duyệt không cho phép sao chép. Vui lòng chọn và sao chép nội dung thủ công.",
+      "error",
+    );
   }
 }
 
 renderSummary();
 
-const qrMethodInput = document.querySelector('input[name="paymentMethod"][value="qr"]');
-const gatewayMethods = document.querySelectorAll('input[name="paymentMethod"]:not([value="qr"])');
+const qrMethodInput = document.querySelector(
+  'input[name="paymentMethod"][value="qr"]',
+);
+const gatewayMethods = document.querySelectorAll(
+  'input[name="paymentMethod"]:not([value="qr"])',
+);
 gatewayMethods.forEach((input) => {
   input.disabled = !paymentAvailable;
   input.closest(".payment-option").title = paymentAvailable
@@ -521,7 +714,8 @@ if (manualQrAvailable) {
   paymentAvailability.hidden = false;
   payButton.disabled = false;
 } else if (!paymentAvailable) {
-  paymentAvailability.textContent = "Thanh toán trực tuyến hiện chưa khả dụng. Vui lòng thử lại sau hoặc liên hệ TripGo để được hỗ trợ.";
+  paymentAvailability.textContent =
+    "Thanh toán trực tuyến hiện chưa khả dụng. Vui lòng thử lại sau hoặc liên hệ TripGo để được hỗ trợ.";
   paymentAvailability.hidden = false;
   payButton.disabled = true;
 } else {
@@ -529,15 +723,23 @@ if (manualQrAvailable) {
 }
 
 if (requestedBookingCode) {
-  if (!activeBooking || !["Chờ thanh toán", "Đã hủy", "Đã đặt vé"].includes(activeBooking.status)) {
-    showError("Không tìm thấy đơn hàng đang chờ thanh toán thuộc tài khoản của bạn.");
+  if (
+    !activeBooking ||
+    !["Chờ thanh toán", "Đã hủy", "Đã đặt vé"].includes(activeBooking.status)
+  ) {
+    showError(
+      "Không tìm thấy đơn hàng đang chờ thanh toán thuộc tài khoản của bạn.",
+    );
     paymentChoice.hidden = true;
     payButton.disabled = true;
   } else if (activeBooking.status === "Đã hủy") {
     showError("Đơn hàng này đã bị hủy và không thể tiếp tục thanh toán.");
     paymentChoice.hidden = true;
     payButton.disabled = true;
-  } else if (activeBooking.status === "Đã đặt vé" && !hasVerifiedPayment(activeBooking)) {
+  } else if (
+    activeBooking.status === "Đã đặt vé" &&
+    !hasVerifiedPayment(activeBooking)
+  ) {
     showError("Đơn hàng chưa có xác nhận thanh toán từ cổng thanh toán.");
     paymentChoice.hidden = true;
     payButton.disabled = true;
@@ -552,24 +754,40 @@ payButton.addEventListener("click", async () => {
   result.className = "";
   payButton.disabled = true;
   try {
-    const method = document.querySelector('input[name="paymentMethod"]:checked')?.value;
-    if (!method || !paymentMethods[method]) throw new Error("Vui lòng chọn phương thức thanh toán.");
+    const method = document.querySelector(
+      'input[name="paymentMethod"]:checked',
+    )?.value;
+    if (!method || !paymentMethods[method])
+      throw new Error("Vui lòng chọn phương thức thanh toán.");
     if (method === "qr" && manualQrAvailable && !paymentAvailable) {
       const booking = createBooking(method);
-      window.history.replaceState({}, "", `/src/pages/payment.html?bookingCode=${encodeURIComponent(booking.bookingCode)}`);
+      window.history.replaceState(
+        {},
+        "",
+        `/src/pages/payment.html?bookingCode=${encodeURIComponent(booking.bookingCode)}`,
+      );
       showPaymentPanel(booking);
       return;
     }
-    if (!paymentAvailable) throw new Error("Phương thức thanh toán này hiện chưa khả dụng.");
+    if (!paymentAvailable)
+      throw new Error("Phương thức thanh toán này hiện chưa khả dụng.");
     const booking = createBooking(method);
-    window.history.replaceState({}, "", `/src/pages/payment.html?bookingCode=${encodeURIComponent(booking.bookingCode)}`);
+    window.history.replaceState(
+      {},
+      "",
+      `/src/pages/payment.html?bookingCode=${encodeURIComponent(booking.bookingCode)}`,
+    );
     showPaymentPanel(booking);
     try {
       await requestProviderPayment();
     } catch (error) {
       console.error("Không thể tạo yêu cầu tại cổng thanh toán:", error);
       paymentState = "failed";
-      updateBooking({ paymentState, paymentStatus: "Không thể tạo yêu cầu thanh toán", paymentFailureReason: error.message });
+      updateBooking({
+        paymentState,
+        paymentStatus: "Không thể tạo yêu cầu thanh toán",
+        paymentFailureReason: error.message,
+      });
       renderPaymentState();
       showPaymentMessage(error.message, "error");
     }
@@ -580,19 +798,36 @@ payButton.addEventListener("click", async () => {
   }
 });
 
-document.getElementById("retryPayment").addEventListener("click", retryProviderPayment);
-document.getElementById("cancelPayment").addEventListener("click", cancelPayment);
-document.getElementById("copyAccount").addEventListener("click", () =>
-  copyValue(document.getElementById("accountNumber").textContent, "số tài khoản")
-);
-document.getElementById("copyTransfer").addEventListener("click", () =>
-  copyValue(document.getElementById("transferContent").textContent, "nội dung chuyển khoản")
-);
+document
+  .getElementById("retryPayment")
+  .addEventListener("click", retryProviderPayment);
+document
+  .getElementById("cancelPayment")
+  .addEventListener("click", cancelPayment);
+document
+  .getElementById("copyAccount")
+  .addEventListener("click", () =>
+    copyValue(
+      document.getElementById("accountNumber").textContent,
+      "số tài khoản",
+    ),
+  );
+document
+  .getElementById("copyTransfer")
+  .addEventListener("click", () =>
+    copyValue(
+      document.getElementById("transferContent").textContent,
+      "nội dung chuyển khoản",
+    ),
+  );
 
 document.querySelectorAll('input[name="paymentMethod"]').forEach((input) => {
   input.addEventListener("change", () => {
     document.querySelectorAll(".payment-option").forEach((option) => {
-      option.classList.toggle("active", option.contains(input) && input.checked);
+      option.classList.toggle(
+        "active",
+        option.contains(input) && input.checked,
+      );
     });
   });
 });

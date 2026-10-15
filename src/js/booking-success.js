@@ -17,25 +17,36 @@ const paymentLabels = {
   qr: "Quét mã QR",
   "domestic-card": "Thẻ nội địa",
   "international-card": "Thẻ quốc tế",
-  ewallet: "Ví điện tử"
+  ewallet: "Ví điện tử",
 };
 const booking = bookingCode
-  ? auth.getBookings().find((item) =>
-      item.bookingCode === bookingCode &&
-      item.userEmail?.toLowerCase() === user?.email?.toLowerCase()
-    )
+  ? auth
+      .getBookings()
+      .find(
+        (item) =>
+          item.bookingCode === bookingCode &&
+          item.userEmail?.toLowerCase() === user?.email?.toLowerCase(),
+      )
   : null;
 
 if (!booking) {
   missing.hidden = false;
-} else if (booking.status !== "Đã đặt vé" || booking.paymentState !== "paid" || /demo|mô phỏng/i.test(booking.paymentStatus || "")) {
+} else if (
+  booking.status !== "Đã đặt vé" ||
+  booking.paymentState !== "paid" ||
+  /demo|mô phỏng/i.test(booking.paymentStatus || "")
+) {
   paymentPending.hidden = false;
   const isCancelled = booking.status === "Đã hủy";
-  const isUnverified = booking.status === "Đã đặt vé" &&
-    (booking.paymentState !== "paid" || /demo|mô phỏng/i.test(booking.paymentStatus || ""));
+  const isUnverified =
+    booking.status === "Đã đặt vé" &&
+    (booking.paymentState !== "paid" ||
+      /demo|mô phỏng/i.test(booking.paymentStatus || ""));
   document.getElementById("pendingTitle").textContent = isCancelled
     ? "Đơn hàng đã bị hủy"
-    : isUnverified ? "Chưa xác minh thanh toán" : "Đơn hàng chưa hoàn tất";
+    : isUnverified
+      ? "Chưa xác minh thanh toán"
+      : "Đơn hàng chưa hoàn tất";
   document.getElementById("pendingMessage").textContent = isCancelled
     ? "Đơn hàng đã bị hủy và chưa được xác nhận thanh toán."
     : isUnverified
@@ -57,7 +68,7 @@ if (!booking) {
     HUI: "Huế",
     VCA: "Cần Thơ",
     UIH: "Quy Nhơn",
-    VDO: "Vân Đồn"
+    VDO: "Vân Đồn",
   };
   const flight = booking.flight || {};
   const passengerCount = Math.max(1, Number(booking.passengerCount || 1));
@@ -86,16 +97,18 @@ if (!booking) {
     departureDate: departureDate
       ? new Date(`${departureDate}T00:00:00`).toLocaleDateString("vi-VN")
       : "—",
-    passengerName: booking.passenger?.fullName || booking.passenger?.name || "—",
+    passengerName:
+      booking.passenger?.fullName || booking.passenger?.name || "—",
     passengerCount: `${passengerCount} hành khách`,
     ticketClass: booking.ticketType || booking.classType || "Phổ thông",
     seatNumbers: seats,
     ticketCount: `${passengerCount} vé`,
-    paymentMethod: paymentLabels[booking.paymentMethod] || booking.paymentMethod || "—",
+    paymentMethod:
+      paymentLabels[booking.paymentMethod] || booking.paymentMethod || "—",
     bookingTime: bookingDate,
     unitPrice: formatPrice(unitPrice),
     priceTicketCount: `${passengerCount} vé`,
-    totalPrice: formatPrice(totalPrice)
+    totalPrice: formatPrice(totalPrice),
   };
 
   for (const [id, value] of Object.entries(values)) {
@@ -104,5 +117,7 @@ if (!booking) {
 
   ticket.hidden = false;
   actions.hidden = false;
-  document.getElementById("printTicket").addEventListener("click", () => window.print());
+  document
+    .getElementById("printTicket")
+    .addEventListener("click", () => window.print());
 }

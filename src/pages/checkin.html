@@ -38,8 +38,10 @@
         <p class="eyebrow dark">ONLINE CHECK-IN</p>
         <h1>Check-in trực tuyến</h1>
         <p>Nhập mã đặt chỗ và họ hành khách để bắt đầu.</p>
-        <label for="code">Mã đặt chỗ</label><input id="code" placeholder="TG123456" autocomplete="off" />
-        <label for="surname">Họ hành khách</label><input id="surname" placeholder="NGUYEN" autocomplete="family-name" />
+        <label for="code">Mã đặt chỗ</label
+        ><input id="code" placeholder="TG123456" autocomplete="off" />
+        <label for="surname">Họ hành khách</label
+        ><input id="surname" placeholder="NGUYEN" autocomplete="family-name" />
         <button class="primary-btn wide" id="checkinBtn">Check-in</button>
         <div id="result"></div>
       </div>
@@ -47,19 +49,21 @@
     <script type="module">
       import "../js/auth.js";
       if (window.TripGoAuth.requireLogin()) {
-      window.TripGoAuth.updateAuthUI();
-      document.getElementById("checkinBtn").addEventListener("click", () => {
-        const code = document.getElementById("code").value.trim().toUpperCase(),
-          surname = document
-            .getElementById("surname")
-            .value.trim()
-            .toLowerCase(),
-          result = document.getElementById("result");
-        const user = window.TripGoAuth.getCurrentUser();
-        const bookings = window.TripGoAuth.getBookings();
-        const userEmail = user.email?.toLowerCase();
-        const booking = bookings.find(
-          (item) => {
+        window.TripGoAuth.updateAuthUI();
+        document.getElementById("checkinBtn").addEventListener("click", () => {
+          const code = document
+              .getElementById("code")
+              .value.trim()
+              .toUpperCase(),
+            surname = document
+              .getElementById("surname")
+              .value.trim()
+              .toLowerCase(),
+            result = document.getElementById("result");
+          const user = window.TripGoAuth.getCurrentUser();
+          const bookings = window.TripGoAuth.getBookings();
+          const userEmail = user.email?.toLowerCase();
+          const booking = bookings.find((item) => {
             const belongsToUser =
               window.TripGoAuth.isAdmin() ||
               item.userEmail?.toLowerCase() === userEmail ||
@@ -68,24 +72,26 @@
             return (
               belongsToUser &&
               item.bookingCode?.toUpperCase() === code &&
-              (item.passenger?.fullName || "").toLowerCase().split(" ").pop() ===
-                surname
+              (item.passenger?.fullName || "")
+                .toLowerCase()
+                .split(" ")
+                .pop() === surname
             );
-          },
-        );
-        if (!booking) {
-          result.innerHTML =
-            '<div class="error">Không tìm thấy đặt chỗ. Kiểm tra mã đặt chỗ và họ hành khách.</div>';
-          return;
-        }
-        if (booking.status === "Đã hủy") {
-          result.innerHTML = '<div class="error">Đặt chỗ này đã bị hủy.</div>';
-          return;
-        }
-        booking.status = "Đã check-in";
-        window.TripGoAuth.saveBookings(bookings);
-        result.innerHTML = `<div class="notice">Check-in thành công cho mã <b>${booking.bookingCode}</b>. Ghế: <b>${booking.seat || "Chưa chọn"}</b>.</div>`;
-      });
+          });
+          if (!booking) {
+            result.innerHTML =
+              '<div class="error">Không tìm thấy đặt chỗ. Kiểm tra mã đặt chỗ và họ hành khách.</div>';
+            return;
+          }
+          if (booking.status === "Đã hủy") {
+            result.innerHTML =
+              '<div class="error">Đặt chỗ này đã bị hủy.</div>';
+            return;
+          }
+          booking.status = "Đã check-in";
+          window.TripGoAuth.saveBookings(bookings);
+          result.innerHTML = `<div class="notice">Check-in thành công cho mã <b>${booking.bookingCode}</b>. Ghế: <b>${booking.seat || "Chưa chọn"}</b>.</div>`;
+        });
       }
     </script>
     <script type="module" src="/src/js/auth-page.js"></script>

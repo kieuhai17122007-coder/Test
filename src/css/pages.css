@@ -776,7 +776,9 @@
   animation: payment-spin 0.8s linear infinite;
 }
 @keyframes payment-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 .qr-payment-content {
   display: grid;

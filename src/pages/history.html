@@ -90,28 +90,36 @@
               ? "cancelled"
               : normalizedStatus.includes("thanh toán")
                 ? "pending"
-              : normalizedStatus.includes("check-in")
-                ? "checked"
-                : "confirmed";
-            const paymentState = b.paymentState ||
-              (/^(đã thanh toán|đã xác nhận chuyển khoản)/i.test(b.paymentStatus || "")
+                : normalizedStatus.includes("check-in")
+                  ? "checked"
+                  : "confirmed";
+            const paymentState =
+              b.paymentState ||
+              (/^(đã thanh toán|đã xác nhận chuyển khoản)/i.test(
+                b.paymentStatus || "",
+              )
                 ? "paid"
                 : "pending");
-            const paymentLabel = b.paymentStatus || ({
-              paid: "Đã thanh toán",
-              processing: "Đang xác nhận",
-              failed: "Thanh toán thất bại",
-              expired: "Yêu cầu thanh toán hết hạn",
-              cancelled: "Đã hủy thanh toán",
-            }[paymentState] || "Chưa xác nhận thanh toán");
-            const paymentClass = paymentState === "paid"
-              ? "payment-paid"
-              : ["failed", "expired", "cancelled"].includes(paymentState)
-                ? "payment-failed"
-                : "payment-pending";
-            const paymentLink = bookingStatus === "Chờ thanh toán"
-              ? `<a class="primary-btn" href="/src/pages/payment.html?bookingCode=${encodeURIComponent(b.bookingCode)}">Tiếp tục thanh toán</a>`
-              : `<a class="secondary-btn" href="/src/pages/booking.html">Xem đặt chỗ</a>`;
+            const paymentLabel =
+              b.paymentStatus ||
+              {
+                paid: "Đã thanh toán",
+                processing: "Đang xác nhận",
+                failed: "Thanh toán thất bại",
+                expired: "Yêu cầu thanh toán hết hạn",
+                cancelled: "Đã hủy thanh toán",
+              }[paymentState] ||
+              "Chưa xác nhận thanh toán";
+            const paymentClass =
+              paymentState === "paid"
+                ? "payment-paid"
+                : ["failed", "expired", "cancelled"].includes(paymentState)
+                  ? "payment-failed"
+                  : "payment-pending";
+            const paymentLink =
+              bookingStatus === "Chờ thanh toán"
+                ? `<a class="primary-btn" href="/src/pages/payment.html?bookingCode=${encodeURIComponent(b.bookingCode)}">Tiếp tục thanh toán</a>`
+                : `<a class="secondary-btn" href="/src/pages/booking.html">Xem đặt chỗ</a>`;
             return `<article class="history-card">
       <div class="history-top"><div class="history-statuses"><span class="history-code">${escape(b.bookingCode)}</span><span class="status-pill ${statusClass}">${escape(bookingStatus)}</span><span class="status-pill ${paymentClass}">${escape(paymentLabel)}</span></div><small>Đặt ngày ${date(b.createdAt)}</small></div>
       <div class="history-route"><div><strong>${escape(b.flight?.from)}</strong><span>${escape(b.flight?.departure || "")}</span></div><div class="history-plane">✈<i></i><small>${escape(b.flight?.flightNumber)}</small></div><div><strong>${escape(b.flight?.to)}</strong><span>${escape(b.flight?.arrival || "")}</span></div></div>

@@ -10,12 +10,15 @@ export const paymentConfig = {
   bankName: env.VITE_PAYMENT_BANK_NAME || "Techcombank",
   accountName: env.VITE_PAYMENT_ACCOUNT_NAME || "KIEU DUC HAI",
   accountNumber: env.VITE_PAYMENT_ACCOUNT_NUMBER || "8881 7122 0078 88",
-  qrImageUrl: paymentQrUrl
+  qrImageUrl: paymentQrUrl,
 };
 
-export const paymentAvailable = paymentConfig.mode === "live" &&
+export const paymentAvailable =
+  paymentConfig.mode === "live" &&
   Boolean(paymentConfig.createEndpoint && paymentConfig.statusEndpoint);
 export const manualQrAvailable = Boolean(
-  paymentConfig.qrImageUrl && paymentConfig.bankName &&
-  paymentConfig.accountName && paymentConfig.accountNumber
+  paymentConfig.qrImageUrl &&
+  paymentConfig.bankName &&
+  paymentConfig.accountName &&
+  paymentConfig.accountNumber,
 );

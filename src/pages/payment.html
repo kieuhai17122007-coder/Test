@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
@@ -12,7 +12,12 @@
     <header class="header">
       <div class="container nav">
         <a class="logo" href="/" aria-label="TripGo - Trang chủ">
-          <span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 24 24" role="img"><path d="M21.7 10.9c.4.2.4.8 0 1l-7.2 3.3-1.5 5.1c-.1.4-.5.7-.9.7h-1c-.3 0-.5-.3-.4-.6l.8-4.2-3.2 1.4-1.8 2.2c-.2.2-.5.3-.8.2l-.8-.3c-.3-.1-.4-.5-.2-.8l1.2-2.8-3.1-1.4c-.4-.2-.4-.7 0-.9l.8-.4c.2-.1.4-.1.6 0l4 1.1 3.1-1.5-.9-4.2c-.1-.3.1-.6.4-.7l.9-.2c.4-.1.8.1 1 .4l2 3.4 7.2-2.7c.7-.2 1.3.1 1.6.7l.2.4z"/></svg></span>
+          <span class="logo-mark" aria-hidden="true"
+            ><svg viewBox="0 0 24 24" role="img">
+              <path
+                d="M21.7 10.9c.4.2.4.8 0 1l-7.2 3.3-1.5 5.1c-.1.4-.5.7-.9.7h-1c-.3 0-.5-.3-.4-.6l.8-4.2-3.2 1.4-1.8 2.2c-.2.2-.5.3-.8.2l-.8-.3c-.3-.1-.4-.5-.2-.8l1.2-2.8-3.1-1.4c-.4-.2-.4-.7 0-.9l.8-.4c.2-.1.4-.1.6 0l4 1.1 3.1-1.5-.9-4.2c-.1-.3.1-.6.4-.7l.9-.2c.4-.1.8.1 1 .4l2 3.4 7.2-2.7c.7-.2 1.3.1 1.6.7l.2.4z"
+              /></svg
+          ></span>
           <span class="logo-text">TripGo</span>
         </a>
         <nav class="main-nav" aria-label="Điều hướng chính">
@@ -23,7 +28,9 @@
           <a data-nav="checkin" href="/src/pages/checkin.html">Check-in</a>
         </nav>
         <div class="nav-account">
-          <a class="login-btn" data-auth-link href="/src/pages/login.html">Đăng nhập</a>
+          <a class="login-btn" data-auth-link href="/src/pages/login.html"
+            >Đăng nhập</a
+          >
         </div>
       </div>
     </header>
@@ -40,14 +47,31 @@
       <div class="container booking-shell">
         <aside class="booking-aside">
           <div class="booking-photo payment-photo">
-            <div><span>TRIPGO PAY</span><strong>Hoàn tất hành trình với trải nghiệm thanh toán đơn giản.</strong></div>
+            <div>
+              <span>TRIPGO PAY</span
+              ><strong
+                >Hoàn tất hành trình với trải nghiệm thanh toán đơn
+                giản.</strong
+              >
+            </div>
           </div>
-          <div class="aside-tip"><span>🔒</span><div><b>Thanh toán bảo mật</b><p>Thông tin thanh toán được xử lý qua cổng thanh toán của đối tác. TripGo không lưu thông tin thẻ.</p></div></div>
+          <div class="aside-tip">
+            <span>🔒</span>
+            <div>
+              <b>Thanh toán bảo mật</b>
+              <p>
+                Thông tin thanh toán được xử lý qua cổng thanh toán của đối tác.
+                TripGo không lưu thông tin thẻ.
+              </p>
+            </div>
+          </div>
         </aside>
         <section class="booking-card">
           <p class="eyebrow dark">05 / THANH TOÁN</p>
           <h1>Thanh toán vé máy bay</h1>
-          <p class="lead">Kiểm tra hành trình và tạo yêu cầu thanh toán an toàn.</p>
+          <p class="lead">
+            Kiểm tra hành trình và tạo yêu cầu thanh toán an toàn.
+          </p>
           <div id="summary" class="payment-summary" aria-live="polite"></div>
           <div id="paymentChoice">
             <h2 class="payment-section-title">Chọn phương thức thanh toán</h2>
@@ -58,12 +82,20 @@
                 <span><b>Quét mã QR</b><small>Ứng dụng ngân hàng</small></span>
               </label>
               <label class="payment-option">
-                <input type="radio" name="paymentMethod" value="domestic-card" />
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="domestic-card"
+                />
                 <span class="payment-icon" aria-hidden="true">▣</span>
                 <span><b>Thẻ nội địa</b><small>ATM / Napas</small></span>
               </label>
               <label class="payment-option">
-                <input type="radio" name="paymentMethod" value="international-card" />
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="international-card"
+                />
                 <span class="payment-icon" aria-hidden="true">◉</span>
                 <span><b>Thẻ quốc tế</b><small>Visa / Mastercard</small></span>
               </label>
@@ -73,20 +105,43 @@
                 <span><b>Ví điện tử</b><small>Thanh toán nhanh</small></span>
               </label>
             </div>
-            <div id="paymentAvailability" class="payment-availability" role="status"></div>
-            <button class="primary-btn wide" id="payBtn" type="button">Tiếp tục thanh toán</button>
+            <div
+              id="paymentAvailability"
+              class="payment-availability"
+              role="status"
+            ></div>
+            <button class="primary-btn wide" id="payBtn" type="button">
+              Tiếp tục thanh toán
+            </button>
           </div>
-          <section id="paymentPanel" class="qr-payment-panel" aria-labelledby="qrTitle" hidden>
+          <section
+            id="paymentPanel"
+            class="qr-payment-panel"
+            aria-labelledby="qrTitle"
+            hidden
+          >
             <div class="qr-payment-heading">
-              <div><p class="eyebrow dark">MÃ ĐƠN HÀNG <strong id="orderCode"></strong></p><h2 id="qrTitle">Quét mã QR để thanh toán</h2></div>
-              <span id="paymentBadge" class="payment-status-badge" data-state="pending">Chờ thanh toán</span>
+              <div>
+                <p class="eyebrow dark">
+                  MÃ ĐƠN HÀNG <strong id="orderCode"></strong>
+                </p>
+                <h2 id="qrTitle">Quét mã QR để thanh toán</h2>
+              </div>
+              <span
+                id="paymentBadge"
+                class="payment-status-badge"
+                data-state="pending"
+                >Chờ thanh toán</span
+              >
             </div>
             <div id="qrPaymentContent" class="qr-payment-content">
               <div class="qr-code-frame" id="qrFrame">
                 <div id="qrPlaceholder" class="qr-placeholder">
                   <span aria-hidden="true">▦</span>
                   <b id="paymentMethodTitle">Đang chờ cổng thanh toán</b>
-                  <small id="paymentInstructions">Hướng dẫn thanh toán sẽ hiển thị tại đây.</small>
+                  <small id="paymentInstructions"
+                    >Hướng dẫn thanh toán sẽ hiển thị tại đây.</small
+                  >
                 </div>
                 <img id="qrImage" alt="Mã QR thanh toán của đơn hàng" hidden />
               </div>
@@ -94,21 +149,61 @@
                 <p class="qr-amount-label">Tổng tiền cần thanh toán</p>
                 <strong id="qrAmount" class="qr-amount"></strong>
                 <dl class="bank-details">
-                  <div><dt>Ngân hàng</dt><dd id="bankName">Chưa cấu hình</dd></div>
-                  <div><dt>Chủ tài khoản</dt><dd id="accountName">Chưa cấu hình</dd></div>
-                  <div><dt>Số tài khoản</dt><dd id="accountNumber">Chưa cấu hình</dd></div>
-                  <div><dt>Nội dung chuyển khoản</dt><dd id="transferContent"></dd></div>
+                  <div>
+                    <dt>Ngân hàng</dt>
+                    <dd id="bankName">Chưa cấu hình</dd>
+                  </div>
+                  <div>
+                    <dt>Chủ tài khoản</dt>
+                    <dd id="accountName">Chưa cấu hình</dd>
+                  </div>
+                  <div>
+                    <dt>Số tài khoản</dt>
+                    <dd id="accountNumber">Chưa cấu hình</dd>
+                  </div>
+                  <div>
+                    <dt>Nội dung chuyển khoản</dt>
+                    <dd id="transferContent"></dd>
+                  </div>
                 </dl>
                 <div class="copy-actions">
-                  <button id="copyAccount" class="secondary-btn" type="button" disabled>Sao chép số tài khoản</button>
-                  <button id="copyTransfer" class="secondary-btn" type="button">Sao chép nội dung chuyển khoản</button>
+                  <button
+                    id="copyAccount"
+                    class="secondary-btn"
+                    type="button"
+                    disabled
+                  >
+                    Sao chép số tài khoản
+                  </button>
+                  <button id="copyTransfer" class="secondary-btn" type="button">
+                    Sao chép nội dung chuyển khoản
+                  </button>
                 </div>
               </div>
             </div>
-            <div id="paymentMessage" class="payment-state-message" role="status"></div>
-            <button id="retryPayment" class="primary-btn wide" type="button" hidden>Tạo yêu cầu thanh toán mới</button>
-            <a id="viewTicket" class="primary-btn wide" href="#" hidden>Xem vé của tôi</a>
-            <button id="cancelPayment" class="text-danger cancel-payment-btn" type="button">Hủy thanh toán</button>
+            <div
+              id="paymentMessage"
+              class="payment-state-message"
+              role="status"
+            ></div>
+            <button
+              id="retryPayment"
+              class="primary-btn wide"
+              type="button"
+              hidden
+            >
+              Tạo yêu cầu thanh toán mới
+            </button>
+            <a id="viewTicket" class="primary-btn wide" href="#" hidden
+              >Xem vé của tôi</a
+            >
+            <button
+              id="cancelPayment"
+              class="text-danger cancel-payment-btn"
+              type="button"
+            >
+              Hủy thanh toán
+            </button>
           </section>
           <div id="result" role="alert" aria-live="polite"></div>
         </section>
