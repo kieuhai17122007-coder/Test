@@ -1,38 +1,18 @@
 import assert from "node:assert/strict";
+import flightCatalog from "../src/data/flights.json" with { type: "json" };
 import {
-  createDemoFlights,
   matchesFlightSearch,
   mergeFlightCatalog,
   normalizeFlight,
 } from "../src/js/flight-data.js";
 
-const airports = ["HAN", "SGN", "DAD", "CXR", "PQC", "HPH", "HUI", "VCA", "UIH", "VDO"];
-const demoFlights = createDemoFlights();
-assert.equal(demoFlights.length, airports.length * (airports.length - 1) * 2);
-
-for (const from of airports) {
-  for (const to of airports) {
-    if (from === to) continue;
-    const routeFlights = demoFlights.filter((flight) => flight.from === from && flight.to === to);
-    assert.equal(routeFlights.length, 2, `${from} → ${to} should have two demo flights`);
-
-    for (const departure of ["2026-10-14", "2027-05-01"]) {
-      for (let passengers = 1; passengers <= 9; passengers += 1) {
-        assert.ok(
-          routeFlights.some((flight) => matchesFlightSearch(flight, {
-            from, to, departure, passengers,
-          })),
-          `${from} → ${to} should match ${departure} for ${passengers} passengers`,
-        );
-      }
-    }
-  }
-}
-
-const changedDemoFlight = { ...demoFlights[0], status: "cancelled" };
 const customFlight = { id: "CUSTOM-01", from: "HAN", to: "SGN" };
-const mergedFlights = mergeFlightCatalog(demoFlights, [changedDemoFlight, customFlight]);
-assert.equal(mergedFlights.length, demoFlights.length + 1);
+const mergedFlights = mergeFlightCatalog([customFlight], [{ ...customFlight, status: "cancelled" }, {
+  id: "CUSTOM-02",
+  from: "HAN",
+  to: "SGN",
+}]);
+assert.equal(mergedFlights.length, 2);
 assert.equal(mergedFlights[0].status, "cancelled");
 assert.ok(mergedFlights.some((flight) => flight.id === customFlight.id));
 
@@ -92,5 +72,19 @@ assert.equal(
   false,
 );
 assert.equal(normalizeFlight(null), null);
+
+const sharedFlights = flightCatalog.map(normalizeFlight).filter(Boolean);
+assert.equal(sharedFlights.length, 30);
+assert.equal(new Set(sharedFlights.map((flight) => flight.id)).size, sharedFlights.length);
+assert.ok(sharedFlights.every((flight) => !flight.date));
+assert.ok(sharedFlights.some((flight) => matchesFlightSearch(flight, {
+  from: "HAN",
+  to: "SGN",
+  departure: "2026-10-15",
+  passengers: 2,
+})));
+const migratedFlights = mergeFlightCatalog(sharedFlights, sharedFlights.slice(0, 9));
+assert.equal(migratedFlights.length, sharedFlights.length);
+assert.ok(migratedFlights.some((flight) => flight.id === "TG130"));
 
 console.log("Flight search data tests passed.");

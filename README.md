@@ -28,6 +28,10 @@ Trong dashboard chọn **Quản lý ghế 2D**:
 - Bấm ghế có vé để xem mã đặt chỗ. Muốn giải phóng phải hủy vé ở **Vé đã đặt**.
 - **Sao lưu & khôi phục** xuất/nhập cả sơ đồ ghế. Bản sao lưu cũ không có sơ đồ ghế vẫn được hỗ trợ.
 
+Danh mục chuyến bay dùng chung nằm ở `src/data/flights.json`. Khi admin mở, danh mục này được ghép với dữ liệu đã lưu để giữ các chỉnh sửa/chuyến bay tự thêm và bổ sung các chuyến mẫu còn thiếu. Danh sách admin phân trang 10 chuyến mỗi lần; dùng **Xem thêm** để xem phần còn lại. Các trang chỉ chia sẻ dữ liệu khi chạy cùng địa chỉ web/trình duyệt vì dữ liệu demo được lưu trong `localStorage`.
+
+Trong **Vé đã đặt**, xem cột **Thanh toán** hoặc lọc theo trạng thái thanh toán. Chỉ bấm **Xác nhận đã nhận tiền** sau khi đối soát đúng số tiền và nội dung chuyển khoản trên tài khoản ngân hàng; thao tác ghi lại người xác nhận và thời gian. Đây là demo lưu trên trình duyệt, không tự kiểm tra giao dịch ngân hàng hay đồng bộ dữ liệu giữa các máy.
+
 ## Quy tắc và phạm vi demo
 
 Sơ đồ cố định 20 hàng × 6 ghế = 120 vị trí, lối đi ở giữa C và D. Đây là mô hình minh họa; số chỗ bán trong danh mục chuyến bay là hạn mức riêng. Ghế chưa chọn không được giữ chỗ; chỉ ghi nhận khi thanh toán demo thành công. Hệ thống kiểm tra lại ghế lúc xác nhận chọn ghế và thanh toán, chặn ghế trùng/khóa và chặn tạo một ghế trống ở giữa hai ghế đã chiếm. Lỗ trống vốn có từ trước không chặn những lựa chọn ở hàng khác.

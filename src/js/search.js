@@ -1,7 +1,7 @@
 
 import './auth.js';
+import flightCatalog from "../data/flights.json";
 import {
-    createDemoFlights,
     matchesFlightSearch,
     mergeFlightCatalog,
     normalizeFlight
@@ -10,112 +10,10 @@ import {
 if (window.TripGoAuth.requireLogin()) {
 window.TripGoAuth.updateAuthUI();
 
-const legacyFlights = [
-    {
-        id: "TG101",
-        airline: "Vietnam Airlines",
-        from: "HAN",
-        to: "SGN",
-        departure: "07:00",
-        arrival: "09:10",
-        duration: "2 giờ 10 phút",
-        price: 1500000
-    },
-    {
-        id: "TG102",
-        airline: "Vietjet Air",
-        from: "HAN",
-        to: "SGN",
-        departure: "09:30",
-        arrival: "11:40",
-        duration: "2 giờ 10 phút",
-        price: 1100000
-    },
-    {
-        id: "TG103",
-        airline: "Bamboo Airways",
-        from: "HAN",
-        to: "DAD",
-        departure: "08:00",
-        arrival: "09:25",
-        duration: "1 giờ 25 phút",
-        price: 950000
-    },
-    {
-        id: "TG104",
-        airline: "Vietnam Airlines",
-        from: "SGN",
-        to: "HAN",
-        departure: "14:00",
-        arrival: "16:10",
-        duration: "2 giờ 10 phút",
-        price: 1600000
-    },
-    {
-        id: "TG105",
-        airline: "Vietjet Air",
-        from: "SGN",
-        to: "DAD",
-        departure: "10:00",
-        arrival: "11:20",
-        duration: "1 giờ 20 phút",
-        price: 850000
-    },
-    {
-        id: "TG106",
-        airline: "Bamboo Airways",
-        from: "DAD",
-        to: "HAN",
-        departure: "16:00",
-        arrival: "17:25",
-        duration: "1 giờ 25 phút",
-        price: 1000000
-    },
-    {
-        id: "TG107",
-        airline: "Vietnam Airlines",
-        from: "HAN",
-        to: "CXR",
-        departure: "11:00",
-        arrival: "12:50",
-        duration: "1 giờ 50 phút",
-        price: 1250000
-    },
-    {
-        id: "TG108",
-        airline: "Vietjet Air",
-        from: "HAN",
-        to: "PQC",
-        departure: "13:30",
-        arrival: "15:45",
-        duration: "2 giờ 15 phút",
-        price: 1350000
-    },
-    { id: "TG109", airline: "Vietnam Airlines", from: "HAN", to: "SGN", departure: "12:00", arrival: "14:10", duration: "2 giờ 10 phút", price: 1450000 },
-    { id: "TG110", airline: "Vietjet Air", from: "SGN", to: "HAN", departure: "08:30", arrival: "10:40", duration: "2 giờ 10 phút", price: 1050000 },
-    { id: "TG111", airline: "Bamboo Airways", from: "SGN", to: "HAN", departure: "19:00", arrival: "21:10", duration: "2 giờ 10 phút", price: 1350000 },
-    { id: "TG112", airline: "Vietnam Airlines", from: "HAN", to: "DAD", departure: "11:00", arrival: "12:25", duration: "1 giờ 25 phút", price: 1050000 },
-    { id: "TG113", airline: "Vietjet Air", from: "HAN", to: "DAD", departure: "17:00", arrival: "18:25", duration: "1 giờ 25 phút", price: 850000 },
-    { id: "TG114", airline: "Vietnam Airlines", from: "DAD", to: "HAN", departure: "09:00", arrival: "10:25", duration: "1 giờ 25 phút", price: 1100000 },
-    { id: "TG115", airline: "Vietjet Air", from: "DAD", to: "HAN", departure: "20:00", arrival: "21:25", duration: "1 giờ 25 phút", price: 900000 },
-    { id: "TG116", airline: "Vietnam Airlines", from: "SGN", to: "DAD", departure: "14:00", arrival: "15:20", duration: "1 giờ 20 phút", price: 950000 },
-    { id: "TG117", airline: "Bamboo Airways", from: "SGN", to: "DAD", departure: "18:00", arrival: "19:20", duration: "1 giờ 20 phút", price: 1000000 },
-    { id: "TG118", airline: "Vietnam Airlines", from: "DAD", to: "SGN", departure: "07:30", arrival: "08:50", duration: "1 giờ 20 phút", price: 1000000 },
-    { id: "TG119", airline: "Vietjet Air", from: "DAD", to: "SGN", departure: "12:30", arrival: "13:50", duration: "1 giờ 20 phút", price: 800000 },
-    { id: "TG120", airline: "Bamboo Airways", from: "DAD", to: "SGN", departure: "21:00", arrival: "22:20", duration: "1 giờ 20 phút", price: 950000 },
-    { id: "TG121", airline: "Vietjet Air", from: "HAN", to: "CXR", departure: "15:00", arrival: "16:50", duration: "1 giờ 50 phút", price: 1150000 },
-    { id: "TG122", airline: "Bamboo Airways", from: "HAN", to: "CXR", departure: "19:00", arrival: "20:50", duration: "1 giờ 50 phút", price: 1300000 },
-    { id: "TG123", airline: "Vietnam Airlines", from: "CXR", to: "HAN", departure: "08:00", arrival: "09:50", duration: "1 giờ 50 phút", price: 1350000 },
-    { id: "TG124", airline: "Vietjet Air", from: "CXR", to: "HAN", departure: "13:00", arrival: "14:50", duration: "1 giờ 50 phút", price: 1050000 },
-    { id: "TG125", airline: "Bamboo Airways", from: "CXR", to: "HAN", departure: "18:30", arrival: "20:20", duration: "1 giờ 50 phút", price: 1250000 },
-    { id: "TG126", airline: "Vietnam Airlines", from: "HAN", to: "PQC", departure: "16:00", arrival: "18:15", duration: "2 giờ 15 phút", price: 1450000 },
-    { id: "TG127", airline: "Bamboo Airways", from: "HAN", to: "PQC", departure: "20:00", arrival: "22:15", duration: "2 giờ 15 phút", price: 1550000 },
-    { id: "TG128", airline: "Vietnam Airlines", from: "PQC", to: "HAN", departure: "07:00", arrival: "09:15", duration: "2 giờ 15 phút", price: 1550000 },
-    { id: "TG129", airline: "Vietjet Air", from: "PQC", to: "HAN", departure: "12:00", arrival: "14:15", duration: "2 giờ 15 phút", price: 1250000 },
-    { id: "TG130", airline: "Bamboo Airways", from: "PQC", to: "HAN", departure: "18:00", arrival: "20:15", duration: "2 giờ 15 phút", price: 1450000 }
-];
-
-const defaultFlights = [...createDemoFlights(), ...legacyFlights];
+const defaultFlights = flightCatalog
+    .map(normalizeFlight)
+    .filter(Boolean)
+    .map((flight) => ({ ...flight, date: flight.date || getToday() }));
 let flights = defaultFlights;
 
 function readFlights() {
