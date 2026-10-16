@@ -157,6 +157,15 @@ import {
       cancelled: "Đã hủy thanh toán",
     }[paymentState(booking)] ||
     "Chưa xác nhận thanh toán";
+  const paymentStatusShortLabel = (booking) =>
+    ({
+      paid: "Đã thanh toán",
+      pending: "Chờ thanh toán",
+      processing: "Đang xác nhận",
+      failed: "Thanh toán thất bại",
+      expired: "Đã hết hạn",
+      cancelled: "Đã hủy",
+    })[paymentState(booking)] || paymentStatusLabel(booking);
   const isPaymentVerified = (booking) =>
     paymentState(booking) === "paid" &&
     !/demo|mô phỏng/i.test(booking.paymentStatus || "");
@@ -174,6 +183,7 @@ import {
     money,
     date,
     bookingState,
+    paymentState,
     alertMessage,
     getFlights: () => read(KEYS.flights, flights),
     getBookings: () =>
@@ -1530,7 +1540,11 @@ import {
                 : bookingStatus === "pending"
                   ? "booking-status--pending"
                   : "booking-status--confirmed";
-            return `<tr><td><b>${safe(code || "-")}</b></td><td>${safe(passenger)}</td><td>${safe(booking.from || booking.flight?.from || "-")} → ${safe(booking.to || booking.flight?.to || "-")}</td><td>${date(booking.date || booking.departureDate)}</td><td>${money(booking.totalPrice ?? booking.total)}</td><td><span class="booking-status ${ticketStatusClass}">${status(booking.status)}</span></td><td><div class="booking-control-cell"><span class="badge ${paymentStatus === "paid" ? "" : paymentStatus === "pending" || paymentStatus === "processing" ? "off" : "cancel"}">${safe(paymentStatusLabel(booking))}</span><div class="booking-actions"><button class="action" data-action="booking-detail" data-id="${safe(code)}">Chi tiết</button><button class="action" data-action="edit-booking" data-id="${safe(code)}">Sửa</button></div></div></td></tr>`;
+            const confirmPaymentAction =
+              paymentStatus !== "paid" && bookingStatus !== "cancelled"
+                ? `<button class="action confirm-payment" data-action="confirm-booking" data-id="${safe(code)}">Xác nhận đã nhận tiền</button>`
+                : "";
+            return `<tr><td><b>${safe(code || "-")}</b></td><td>${safe(passenger)}</td><td>${safe(booking.from || booking.flight?.from || "-")} → ${safe(booking.to || booking.flight?.to || "-")}</td><td>${date(booking.date || booking.departureDate)}</td><td>${money(booking.totalPrice ?? booking.total)}</td><td><span class="booking-status ${ticketStatusClass}">${status(booking.status)}</span></td><td><div class="booking-control-cell"><span class="badge ${paymentStatus === "paid" ? "" : paymentStatus === "pending" || paymentStatus === "processing" ? "off" : "cancel"}" title="${safe(paymentStatusLabel(booking))}">${safe(paymentStatusShortLabel(booking))}</span><div class="booking-actions"><button class="action" data-action="booking-detail" data-id="${safe(code)}">Chi tiết</button><button class="action" data-action="edit-booking" data-id="${safe(code)}">Sửa</button>${confirmPaymentAction}</div></div></td></tr>`;
           })
           .join("")
       : '<tr><td colspan="7" class="empty">Không tìm thấy vé phù hợp.</td></tr>';

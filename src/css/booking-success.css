@@ -302,6 +302,50 @@
   color: #fff;
 }
 
+.email-status {
+  display: flex;
+  width: min(820px, 100%);
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 14px auto 0;
+  padding: 14px 16px;
+  border: 1px solid #d7e8fb;
+  border-radius: 12px;
+  background: #fff;
+  color: #31516f;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.email-status[data-state="failed"] {
+  border-color: #f0d4c7;
+  background: #fff8f5;
+  color: #8a3d25;
+}
+
+.email-status[data-state="accepted"] {
+  border-color: #cfe8d9;
+  background: #f5fbf7;
+  color: #24613f;
+}
+
+.email-status[hidden] {
+  display: none !important;
+}
+
+.email-status button {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border: 1px solid #d3dfeb;
+  border-radius: 8px;
+  background: #fff;
+  color: #31516f;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
 .success-actions button:hover,
 .success-actions a:hover {
   filter: brightness(0.96);
@@ -339,6 +383,11 @@
 
   .success-heading {
     padding: 28px 18px 22px;
+  }
+
+  .email-status {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .booking-code-panel {

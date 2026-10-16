@@ -10,6 +10,9 @@ const ticket = document.getElementById("ticket");
 const actions = document.querySelector(".success-actions");
 const missing = document.getElementById("missingBooking");
 const paymentPending = document.getElementById("paymentPending");
+const emailStatus = document.getElementById("emailStatus");
+const emailStatusText = document.getElementById("emailStatusText");
+const retryEmail = document.getElementById("retryEmail");
 const params = new URLSearchParams(window.location.search);
 const bookingCode = params.get("bookingCode");
 const user = auth.getCurrentUser();
@@ -120,4 +123,92 @@ if (!booking) {
   document
     .getElementById("printTicket")
     .addEventListener("click", () => window.print());
+
+  const emailStorageKey = `tripgo_booking_email_${booking.bookingCode}`;
+  let emailSending = false;
+
+  function renderEmailStatus(state, message, canRetry = false) {
+    emailStatus.hidden = false;
+    emailStatus.dataset.state = state;
+    emailStatusText.textContent = message;
+    retryEmail.hidden = !canRetry;
+  }
+
+  async function sendBookingEmail() {
+    if (emailSending) return;
+    emailSending = true;
+    retryEmail.disabled = true;
+    renderEmailStatus("sending", "Đang gửi email xác nhận...");
+    localStorage.setItem(emailStorageKey, "sending");
+
+    try {
+      const response = await fetch(
+        `${(import.meta.env.VITE_API_URL || "").replace(/\/+$/, "")}/api/send-booking-email`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            bookingCode: booking.bookingCode,
+            email: booking.passenger?.email || booking.userEmail,
+            passengerName:
+              booking.passenger?.fullName || booking.passenger?.name,
+            flightNumber:
+              booking.flightId || flight.flightNumber || flight.id,
+            from: flight.from || booking.from,
+            to: flight.to || booking.to,
+            departureDate,
+            departureTime: flight.departure,
+            arrivalTime: flight.arrival,
+            totalPrice,
+          }),
+        },
+      );
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Chưa gửi được email xác nhận.");
+      }
+      localStorage.setItem(emailStorageKey, "accepted");
+      renderEmailStatus(
+        "accepted",
+        `${result.message || "Resend đã tiếp nhận yêu cầu gửi email."} Kiểm tra cả thư mục Spam; trạng thái tiếp nhận không đảm bảo email đã được giao.`,
+      );
+    } catch (error) {
+      console.error("Không thể gửi email xác nhận đặt vé:", error);
+      localStorage.setItem(emailStorageKey, "failed");
+      const message =
+        error instanceof TypeError || error instanceof SyntaxError
+          ? "Không thể kết nối dịch vụ gửi email. Vui lòng kiểm tra backend rồi thử lại."
+          : error.message || "Chưa gửi được email xác nhận.";
+      renderEmailStatus(
+        "failed",
+        `${message} Thông tin đặt vé vẫn được giữ nguyên.`,
+        true,
+      );
+    } finally {
+      emailSending = false;
+      retryEmail.disabled = false;
+    }
+  }
+
+  retryEmail.addEventListener("click", () => sendBookingEmail());
+  const previousEmailStatus = localStorage.getItem(emailStorageKey);
+  if (previousEmailStatus === "accepted") {
+    renderEmailStatus(
+      "accepted",
+      "Resend đã tiếp nhận email trước đó. Việc tiếp nhận không đảm bảo email đã được giao; kiểm tra cả thư mục Spam.",
+    );
+  } else if (
+    previousEmailStatus === "failed" ||
+    previousEmailStatus === "sending"
+  ) {
+    renderEmailStatus(
+      "failed",
+      previousEmailStatus === "sending"
+        ? "Không xác định được kết quả lần gửi trước. Email sẽ không tự gửi lại khi tải lại trang."
+        : "Lần gửi email trước chưa thành công. Thông tin đặt vé vẫn được giữ nguyên.",
+      true,
+    );
+  } else {
+    sendBookingEmail();
+  }
 }

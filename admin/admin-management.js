@@ -164,6 +164,7 @@ export function createManagement(ctx) {
     money,
     date,
     bookingState,
+    paymentState,
     alertMessage,
     getFlights,
     getBookings,
@@ -534,13 +535,27 @@ export function createManagement(ctx) {
     if (action === "confirm-booking") {
       const all = getBookings();
       const b = all.find((b) => (b.bookingCode || b.code) === id);
-      if (!b || bookingState(b) === "cancelled" || b.paymentState === "paid")
+      if (
+        !b ||
+        bookingState(b) === "cancelled" ||
+        paymentState(b) === "paid"
+      )
         return true;
-      if (b.paymentState === "paid") return true;
-      const f = getFlights().find((f) => f.id === b.flightId);
-      if (!f || ["cancelled", "deleted"].includes(f.status)) {
+      const flightId = b.flightId || b.flight?.id || b.flight?.flightNumber;
+      const f = getFlights().find((flight) => flight.id === flightId);
+      if (f && ["cancelled", "deleted"].includes(f.status)) {
         alertMessage(
-          "Không thể xác nhận vé: chuyến bay không hoạt động.",
+          "Không thể xác nhận vé: chuyến bay đã bị hủy hoặc lưu trữ.",
+          true,
+        );
+        return true;
+      }
+      if (
+        !f &&
+        (!(b.flight?.from || b.from) || !(b.flight?.to || b.to))
+      ) {
+        alertMessage(
+          "Không thể xác nhận vé: thiếu thông tin hành trình để đối soát.",
           true,
         );
         return true;

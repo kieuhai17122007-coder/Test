@@ -577,8 +577,6 @@ async function copyValue(value, label) {
   }
 }
 
-renderSummary();
-
 const paymentAvailability = document.getElementById("paymentAvailability");
 if (manualQrAvailable) {
   paymentAvailability.textContent =
@@ -591,6 +589,31 @@ if (manualQrAvailable) {
   paymentAvailability.hidden = false;
   payButton.disabled = true;
 }
+
+if (!requestedBookingCode) {
+  try {
+    const issue = validateDraft();
+    if (issue) throw new Error(issue);
+    const method = document.querySelector(
+      'input[name="paymentMethod"]:checked',
+    )?.value;
+    if (!method || !paymentMethods[method])
+      throw new Error("Vui lòng chọn phương thức thanh toán.");
+    const booking = createBooking(method);
+    window.history.replaceState(
+      {},
+      "",
+      `/src/pages/payment.html?bookingCode=${encodeURIComponent(booking.bookingCode)}`,
+    );
+  } catch (error) {
+    console.error("Không thể tạo đơn hàng chờ thanh toán:", error);
+    showError(error.message || "Không thể tạo đơn hàng. Vui lòng thử lại.");
+    paymentChoice.hidden = true;
+    payButton.disabled = true;
+  }
+}
+
+renderSummary();
 
 if (requestedBookingCode) {
   if (
@@ -631,13 +654,15 @@ payButton.addEventListener("click", async () => {
       throw new Error("Vui lòng chọn phương thức thanh toán.");
     if (!manualQrAvailable)
       throw new Error("Thanh toán QR hiện chưa khả dụng. Vui lòng thử lại sau.");
-    const booking = createBooking(method);
+    if (!activeBooking)
+      throw new Error("Không tìm thấy đơn hàng chờ thanh toán.");
+    updateBooking({ paymentMethod: method });
     window.history.replaceState(
       {},
       "",
-      `/src/pages/payment.html?bookingCode=${encodeURIComponent(booking.bookingCode)}`,
+      `/src/pages/payment.html?bookingCode=${encodeURIComponent(activeBooking.bookingCode)}`,
     );
-    showPaymentPanel(booking);
+    showPaymentPanel(activeBooking);
   } catch (error) {
     console.error("Không thể tạo đơn hàng thanh toán:", error);
     showError(error.message || "Không thể tạo đơn hàng. Vui lòng thử lại.");
@@ -676,5 +701,15 @@ document.querySelectorAll('input[name="paymentMethod"]').forEach((input) => {
         option.contains(input) && input.checked,
       );
     });
+    if (input.checked && activeBooking && !paymentChoice.hidden) {
+      try {
+        updateBooking({ paymentMethod: input.value });
+      } catch (error) {
+        console.error("Không thể lưu phương thức thanh toán đã chọn:", error);
+        showError(
+          error.message || "Không thể lưu phương thức thanh toán đã chọn.",
+        );
+      }
+    }
   });
 });
