@@ -535,11 +535,7 @@ export function createManagement(ctx) {
     if (action === "confirm-booking") {
       const all = getBookings();
       const b = all.find((b) => (b.bookingCode || b.code) === id);
-      if (
-        !b ||
-        bookingState(b) === "cancelled" ||
-        paymentState(b) === "paid"
-      )
+      if (!b || bookingState(b) === "cancelled" || paymentState(b) === "paid")
         return true;
       const flightId = b.flightId || b.flight?.id || b.flight?.flightNumber;
       const f = getFlights().find((flight) => flight.id === flightId);
@@ -550,10 +546,7 @@ export function createManagement(ctx) {
         );
         return true;
       }
-      if (
-        !f &&
-        (!(b.flight?.from || b.from) || !(b.flight?.to || b.to))
-      ) {
+      if (!f && (!(b.flight?.from || b.from) || !(b.flight?.to || b.to))) {
         alertMessage(
           "Không thể xác nhận vé: thiếu thông tin hành trình để đối soát.",
           true,

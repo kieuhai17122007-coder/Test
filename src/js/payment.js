@@ -268,10 +268,9 @@ function displayPaymentRequest(payment) {
     "transferContent",
     payment.transferContent || `TRIPGO ${activeBooking.bookingCode}`,
   );
-  const method =
-    paymentMethods[activeBooking.paymentMethod] || {
-      label: activeBooking.paymentMethod === "qr" ? "Chuyển khoản QR" : "",
-    };
+  const method = paymentMethods[activeBooking.paymentMethod] || {
+    label: activeBooking.paymentMethod === "qr" ? "Chuyển khoản QR" : "",
+  };
   document.getElementById("qrTitle").textContent = "Quét mã QR để thanh toán";
   document.getElementById("paymentMethodTitle").textContent =
     payment.qrImageUrl || activeBooking.qrImageUrl || manualQrAvailable
@@ -281,9 +280,7 @@ function displayPaymentRequest(payment) {
     "Quét mã bằng ứng dụng ngân hàng, kiểm tra đúng người nhận, số tiền và nội dung chuyển khoản hiển thị bên cạnh.";
   document.getElementById("qrPaymentContent").hidden = false;
   displayQr(
-    payment.qrImageUrl ||
-      activeBooking.qrImageUrl ||
-      paymentConfig.qrImageUrl,
+    payment.qrImageUrl || activeBooking.qrImageUrl || paymentConfig.qrImageUrl,
   );
   paymentChoice.hidden = true;
   paymentPanel.hidden = false;
@@ -640,7 +637,9 @@ payButton.addEventListener("click", async () => {
     if (!method || !paymentMethods[method])
       throw new Error("Vui lòng chọn phương thức thanh toán.");
     if (!manualQrAvailable)
-      throw new Error("Thanh toán QR hiện chưa khả dụng. Vui lòng thử lại sau.");
+      throw new Error(
+        "Thanh toán QR hiện chưa khả dụng. Vui lòng thử lại sau.",
+      );
     if (activeBooking) {
       updateBooking({ paymentMethod: method });
     } else {
@@ -659,9 +658,7 @@ payButton.addEventListener("click", async () => {
   }
 });
 
-document
-  .getElementById("retryPayment")
-  .addEventListener("click", retryPayment);
+document.getElementById("retryPayment").addEventListener("click", retryPayment);
 document
   .getElementById("cancelPayment")
   .addEventListener("click", cancelPayment);
@@ -706,11 +703,7 @@ document.querySelectorAll('input[name="paymentMethod"]').forEach((input) => {
 
 window.addEventListener("storage", (event) => {
   const bookingCode = activeBooking?.bookingCode || requestedBookingCode;
-  if (
-    event.key !== auth.BOOKINGS_KEY ||
-    !bookingCode ||
-    !event.newValue
-  ) {
+  if (event.key !== auth.BOOKINGS_KEY || !bookingCode || !event.newValue) {
     return;
   }
 

@@ -152,8 +152,7 @@ if (!booking) {
             email: booking.passenger?.email || booking.userEmail,
             passengerName:
               booking.passenger?.fullName || booking.passenger?.name,
-            flightNumber:
-              booking.flightId || flight.flightNumber || flight.id,
+            flightNumber: booking.flightId || flight.flightNumber || flight.id,
             from: flight.from || booking.from,
             to: flight.to || booking.to,
             departureDate,
