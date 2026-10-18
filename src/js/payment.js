@@ -582,32 +582,19 @@ if (manualQrAvailable) {
   paymentAvailability.textContent =
     "Cả ba phương thức đều thanh toán bằng mã VietQR. TripGo sẽ xác nhận sau khi đối soát giao dịch.";
   paymentAvailability.hidden = false;
-  payButton.disabled = false;
 } else {
   paymentAvailability.textContent =
     "Thanh toán QR hiện chưa khả dụng. Vui lòng thử lại sau hoặc liên hệ TripGo để được hỗ trợ.";
   paymentAvailability.hidden = false;
-  payButton.disabled = true;
 }
+payButton.disabled =
+  !manualQrAvailable ||
+  !document.querySelector('input[name="paymentMethod"]:checked');
 
 if (!requestedBookingCode) {
-  try {
-    const issue = validateDraft();
-    if (issue) throw new Error(issue);
-    const method = document.querySelector(
-      'input[name="paymentMethod"]:checked',
-    )?.value;
-    if (!method || !paymentMethods[method])
-      throw new Error("Vui lòng chọn phương thức thanh toán.");
-    const booking = createBooking(method);
-    window.history.replaceState(
-      {},
-      "",
-      `/src/pages/payment.html?bookingCode=${encodeURIComponent(booking.bookingCode)}`,
-    );
-  } catch (error) {
-    console.error("Không thể tạo đơn hàng chờ thanh toán:", error);
-    showError(error.message || "Không thể tạo đơn hàng. Vui lòng thử lại.");
+  const issue = validateDraft();
+  if (issue) {
+    showError(issue);
     paymentChoice.hidden = true;
     payButton.disabled = true;
   }
@@ -654,9 +641,11 @@ payButton.addEventListener("click", async () => {
       throw new Error("Vui lòng chọn phương thức thanh toán.");
     if (!manualQrAvailable)
       throw new Error("Thanh toán QR hiện chưa khả dụng. Vui lòng thử lại sau.");
-    if (!activeBooking)
-      throw new Error("Không tìm thấy đơn hàng chờ thanh toán.");
-    updateBooking({ paymentMethod: method });
+    if (activeBooking) {
+      updateBooking({ paymentMethod: method });
+    } else {
+      createBooking(method);
+    }
     window.history.replaceState(
       {},
       "",
@@ -701,6 +690,7 @@ document.querySelectorAll('input[name="paymentMethod"]').forEach((input) => {
         option.contains(input) && input.checked,
       );
     });
+    payButton.disabled = !manualQrAvailable;
     if (input.checked && activeBooking && !paymentChoice.hidden) {
       try {
         updateBooking({ paymentMethod: input.value });
@@ -712,4 +702,41 @@ document.querySelectorAll('input[name="paymentMethod"]').forEach((input) => {
       }
     }
   });
+});
+
+window.addEventListener("storage", (event) => {
+  const bookingCode = activeBooking?.bookingCode || requestedBookingCode;
+  if (
+    event.key !== auth.BOOKINGS_KEY ||
+    !bookingCode ||
+    !event.newValue
+  ) {
+    return;
+  }
+
+  let bookings;
+  try {
+    bookings = JSON.parse(event.newValue);
+  } catch (error) {
+    console.error("Không thể đọc cập nhật vé từ admin:", error);
+    return;
+  }
+  if (!Array.isArray(bookings)) return;
+
+  const updatedBooking = bookings.find(
+    (booking) =>
+      booking.bookingCode === bookingCode &&
+      booking.userEmail?.toLowerCase() === currentUser?.email?.toLowerCase(),
+  );
+  if (
+    updatedBooking?.status !== "Đã đặt vé" ||
+    !hasVerifiedPayment(updatedBooking)
+  ) {
+    return;
+  }
+
+  clearInterval(statusTimer);
+  window.location.replace(
+    `/src/pages/booking-success.html?bookingCode=${encodeURIComponent(updatedBooking.bookingCode)}`,
+  );
 });

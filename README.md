@@ -59,7 +59,7 @@ Trong dashboard chọn **Quản lý ghế 2D**:
 
 Danh mục chuyến bay dùng chung nằm ở `src/data/flights.json`. Khi admin mở, danh mục này được ghép với dữ liệu đã lưu để giữ các chỉnh sửa/chuyến bay tự thêm và bổ sung các chuyến mẫu còn thiếu. Danh sách admin phân trang 10 chuyến mỗi lần; dùng **Xem thêm** để xem phần còn lại. Các trang chỉ chia sẻ dữ liệu khi chạy cùng địa chỉ web/trình duyệt vì dữ liệu demo được lưu trong `localStorage`.
 
-Trong **Vé đã đặt**, xem cột **Thanh toán** hoặc lọc theo trạng thái thanh toán. Chỉ bấm **Xác nhận đã nhận tiền** sau khi đối soát đúng số tiền và nội dung chuyển khoản trên tài khoản ngân hàng; thao tác ghi lại người xác nhận và thời gian. Đây là demo lưu trên trình duyệt, không tự kiểm tra giao dịch ngân hàng hay đồng bộ dữ liệu giữa các máy.
+Trong **Vé đã đặt**, xem cột **Thanh toán** hoặc lọc theo trạng thái thanh toán. Booking mới chỉ được tạo và hiển thị trong admin sau khi khách chọn phương thức thanh toán rồi bấm **Tiếp tục thanh toán**; trước đó khách phải chọn rõ một phương thức. Khi admin xác nhận đã nhận tiền, trang thanh toán của khách đang mở trong cùng trình duyệt sẽ tự chuyển sang trang thông tin vé. Chỉ bấm **Xác nhận đã nhận tiền** sau khi đối soát đúng số tiền và nội dung chuyển khoản trên tài khoản ngân hàng; thao tác ghi lại người xác nhận và thời gian. Đây là demo lưu trên trình duyệt, không tự kiểm tra giao dịch ngân hàng hay đồng bộ dữ liệu giữa các máy.
 
 ## Quy tắc và phạm vi demo
 
